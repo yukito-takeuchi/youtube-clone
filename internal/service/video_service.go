@@ -4,17 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/yukito/video-platform/internal/model"
 	"github.com/yukito/video-platform/internal/repository"
+	"github.com/yukito/video-platform/internal/storage"
 )
 
 type VideoService struct {
 	videoRepo *repository.VideoRepository
+	storage   *storage.MinIOStorage
 }
 
-func NewVideoService(videoRepo *repository.VideoRepository) *VideoService {
-	return &VideoService{videoRepo: videoRepo}
+func NewVideoService(videoRepo *repository.VideoRepository, storage *storage.MinIOStorage) *VideoService {
+	return &VideoService{
+		videoRepo: videoRepo,
+		storage:   storage,
+	}
 }
 
 func (s *VideoService) Create(ctx context.Context, userID int64, req *model.CreateVideoRequest) (*model.Video, error) {
@@ -29,6 +35,54 @@ func (s *VideoService) Create(ctx context.Context, userID int64, req *model.Crea
 
 	createdVideo, err := s.videoRepo.Create(ctx, video)
 	if err != nil {
+		return nil, fmt.Errorf("failed to create video: %w", err)
+	}
+
+	return createdVideo, nil
+}
+
+func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title, description string, videoFile io.Reader, videoFilename, videoContentType string, videoSize int64, thumbnailFile io.Reader, thumbnailFilename, thumbnailContentType string, thumbnailSize int64) (*model.Video, error) {
+	var videoURL, thumbnailURL string
+	var err error
+
+	// Upload video file
+	if videoFile != nil {
+		videoURL, err = s.storage.UploadFile(ctx, videoFile, videoFilename, videoContentType, videoSize)
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload video: %w", err)
+		}
+	}
+
+	// Upload thumbnail file
+	if thumbnailFile != nil {
+		thumbnailURL, err = s.storage.UploadFile(ctx, thumbnailFile, thumbnailFilename, thumbnailContentType, thumbnailSize)
+		if err != nil {
+			// Cleanup video if thumbnail upload fails
+			if videoURL != "" {
+				_ = s.storage.DeleteFile(ctx, videoURL)
+			}
+			return nil, fmt.Errorf("failed to upload thumbnail: %w", err)
+		}
+	}
+
+	video := &model.Video{
+		UserID:       userID,
+		Title:        title,
+		Description:  description,
+		VideoURL:     videoURL,
+		ThumbnailURL: thumbnailURL,
+		ViewCount:    0,
+	}
+
+	createdVideo, err := s.videoRepo.Create(ctx, video)
+	if err != nil {
+		// Cleanup uploaded files if database insert fails
+		if videoURL != "" {
+			_ = s.storage.DeleteFile(ctx, videoURL)
+		}
+		if thumbnailURL != "" {
+			_ = s.storage.DeleteFile(ctx, thumbnailURL)
+		}
 		return nil, fmt.Errorf("failed to create video: %w", err)
 	}
 

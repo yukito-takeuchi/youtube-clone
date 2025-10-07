@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 
@@ -24,6 +25,14 @@ func (h *VideoHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Check if request is multipart/form-data
+	contentType := c.GetHeader("Content-Type")
+	if len(contentType) > 19 && contentType[:19] == "multipart/form-data" {
+		h.CreateWithFiles(c)
+		return
+	}
+
+	// JSON request (backward compatibility)
 	var req model.CreateVideoRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -31,6 +40,77 @@ func (h *VideoHandler) Create(c *gin.Context) {
 	}
 
 	video, err := h.videoService.Create(c.Request.Context(), userID.(int64), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, video)
+}
+
+func (h *VideoHandler) CreateWithFiles(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	// Get form values
+	title := c.PostForm("title")
+	description := c.PostForm("description")
+
+	if title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required"})
+		return
+	}
+
+	// Get video file
+	videoFileHeader, err := c.FormFile("video")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "video file is required"})
+		return
+	}
+
+	videoFile, err := videoFileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to open video file"})
+		return
+	}
+	defer videoFile.Close()
+
+	// Get thumbnail file (optional)
+	var thumbnailFile io.ReadCloser
+	var thumbnailFilename, thumbnailContentType string
+	var thumbnailSize int64
+
+	thumbnailFileHeader, err := c.FormFile("thumbnail")
+	if err == nil {
+		thumbnailFile, err = thumbnailFileHeader.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to open thumbnail file"})
+			return
+		}
+		defer thumbnailFile.Close()
+		thumbnailFilename = thumbnailFileHeader.Filename
+		thumbnailContentType = thumbnailFileHeader.Header.Get("Content-Type")
+		thumbnailSize = thumbnailFileHeader.Size
+	}
+
+	// Create video with files
+	video, err := h.videoService.CreateWithFiles(
+		c.Request.Context(),
+		userID.(int64),
+		title,
+		description,
+		videoFile,
+		videoFileHeader.Filename,
+		videoFileHeader.Header.Get("Content-Type"),
+		videoFileHeader.Size,
+		thumbnailFile,
+		thumbnailFilename,
+		thumbnailContentType,
+		thumbnailSize,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

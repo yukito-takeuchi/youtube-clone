@@ -125,6 +125,19 @@ GET /api/videos/:id
 
 #### 動画作成（要認証）
 
+**方法1: ファイルアップロード（推奨）**
+
+```bash
+curl -X POST http://localhost:8080/api/videos \
+  -H "Authorization: Bearer <token>" \
+  -F "title=動画タイトル" \
+  -F "description=動画の説明" \
+  -F "video=@/path/to/video.mp4" \
+  -F "thumbnail=@/path/to/thumbnail.jpg"
+```
+
+**方法2: URL指定（レガシー）**
+
 ```
 POST /api/videos
 Authorization: Bearer <token>
@@ -197,26 +210,40 @@ Dockerコンテナ内でAirが自動的にコード変更を検知してリロ�
 
 マイグレーションはアプリケーション起動時に自動実行されます（`internal/database/database.go`）。
 
+## ファイルストレージ
+
+### MinIO
+
+開発環境ではMinIOを使用してファイルを管理します。
+
+- **Console**: http://localhost:9001
+- **Username**: minioadmin
+- **Password**: minioadmin
+
+本番環境では環境変数を変更するだけでAWS S3やCloudflare R2に切り替え可能です。
+
 ## テスト
 
 ```bash
 # curlでテスト
-# 登録
+# 1. 登録
 curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}'
 
-# ログイン
-curl -X POST http://localhost:8080/api/auth/login \
+# 2. ログイン（トークンを取得）
+TOKEN=$(curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}'
+  -d '{"email":"test@example.com","password":"password123"}' | jq -r '.token')
 
-# 動画作成（<TOKEN>は上記で取得したトークン）
+# 3. 動画アップロード（ファイル）
 curl -X POST http://localhost:8080/api/videos \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <TOKEN>" \
-  -d '{"title":"テスト動画","description":"説明文"}'
+  -H "Authorization: Bearer $TOKEN" \
+  -F "title=テスト動画" \
+  -F "description=説明文" \
+  -F "video=@/path/to/video.mp4" \
+  -F "thumbnail=@/path/to/thumbnail.jpg"
 
-# 動画一覧取得
+# 4. 動画一覧取得
 curl http://localhost:8080/api/videos
 ```

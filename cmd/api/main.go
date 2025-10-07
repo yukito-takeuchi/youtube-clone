@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/yukito/video-platform/internal/database"
@@ -12,6 +14,7 @@ import (
 	"github.com/yukito/video-platform/internal/middleware"
 	"github.com/yukito/video-platform/internal/repository"
 	"github.com/yukito/video-platform/internal/service"
+	"github.com/yukito/video-platform/internal/storage"
 )
 
 func main() {
@@ -26,6 +29,15 @@ func main() {
 		port = "8080"
 	}
 
+	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
+	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
+	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
+	minioBucket := os.Getenv("MINIO_BUCKET")
+	minioUseSSL := false
+	if os.Getenv("MINIO_USE_SSL") != "" {
+		minioUseSSL, _ = strconv.ParseBool(os.Getenv("MINIO_USE_SSL"))
+	}
+
 	// Initialize database
 	db, err := database.NewDatabase(databaseURL)
 	if err != nil {
@@ -33,13 +45,19 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize MinIO storage
+	minioStorage, err := storage.NewMinIOStorage(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MinIO: %v", err)
+	}
+
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 	videoRepo := repository.NewVideoRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtSecret)
-	videoService := service.NewVideoService(videoRepo)
+	videoService := service.NewVideoService(videoRepo, minioStorage)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
