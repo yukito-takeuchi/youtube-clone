@@ -13,13 +13,14 @@ import (
 )
 
 type MinIOStorage struct {
-	client     *minio.Client
-	bucketName string
-	useSSL     bool
-	endpoint   string
+	client         *minio.Client
+	bucketName     string
+	useSSL         bool
+	endpoint       string
+	publicEndpoint string
 }
 
-func NewMinIOStorage(endpoint, accessKey, secretKey, bucketName string, useSSL bool) (*MinIOStorage, error) {
+func NewMinIOStorage(endpoint, publicEndpoint, accessKey, secretKey, bucketName string, useSSL bool) (*MinIOStorage, error) {
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure: useSSL,
@@ -28,11 +29,17 @@ func NewMinIOStorage(endpoint, accessKey, secretKey, bucketName string, useSSL b
 		return nil, fmt.Errorf("failed to create minio client: %w", err)
 	}
 
+	// Use publicEndpoint for URL generation, fallback to endpoint if not provided
+	if publicEndpoint == "" {
+		publicEndpoint = endpoint
+	}
+
 	storage := &MinIOStorage{
-		client:     client,
-		bucketName: bucketName,
-		useSSL:     useSSL,
-		endpoint:   endpoint,
+		client:         client,
+		bucketName:     bucketName,
+		useSSL:         useSSL,
+		endpoint:       endpoint,
+		publicEndpoint: publicEndpoint,
 	}
 
 	// Create bucket if it doesn't exist
@@ -90,12 +97,12 @@ func (s *MinIOStorage) UploadFile(ctx context.Context, file io.Reader, filename 
 		return "", fmt.Errorf("failed to upload file: %w", err)
 	}
 
-	// Generate URL
+	// Generate URL using public endpoint
 	protocol := "http"
 	if s.useSSL {
 		protocol = "https"
 	}
-	url := fmt.Sprintf("%s://%s/%s/%s", protocol, s.endpoint, s.bucketName, uniqueFilename)
+	url := fmt.Sprintf("%s://%s/%s/%s", protocol, s.publicEndpoint, s.bucketName, uniqueFilename)
 
 	return url, nil
 }

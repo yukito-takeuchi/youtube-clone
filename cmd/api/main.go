@@ -30,6 +30,7 @@ func main() {
 	}
 
 	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
+	minioPublicEndpoint := os.Getenv("MINIO_PUBLIC_ENDPOINT")
 	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
 	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
 	minioBucket := os.Getenv("MINIO_BUCKET")
@@ -46,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize MinIO storage
-	minioStorage, err := storage.NewMinIOStorage(minioEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
+	minioStorage, err := storage.NewMinIOStorage(minioEndpoint, minioPublicEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
 	if err != nil {
 		log.Fatalf("Failed to connect to MinIO: %v", err)
 	}
