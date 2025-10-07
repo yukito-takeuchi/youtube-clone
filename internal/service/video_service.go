@@ -1,0 +1,108 @@
+package service
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/yukito/video-platform/internal/model"
+	"github.com/yukito/video-platform/internal/repository"
+)
+
+type VideoService struct {
+	videoRepo *repository.VideoRepository
+}
+
+func NewVideoService(videoRepo *repository.VideoRepository) *VideoService {
+	return &VideoService{videoRepo: videoRepo}
+}
+
+func (s *VideoService) Create(ctx context.Context, userID int64, req *model.CreateVideoRequest) (*model.Video, error) {
+	video := &model.Video{
+		UserID:       userID,
+		Title:        req.Title,
+		Description:  req.Description,
+		VideoURL:     req.VideoURL,
+		ThumbnailURL: req.ThumbnailURL,
+		ViewCount:    0,
+	}
+
+	createdVideo, err := s.videoRepo.Create(ctx, video)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create video: %w", err)
+	}
+
+	return createdVideo, nil
+}
+
+func (s *VideoService) GetByID(ctx context.Context, id int64) (*model.Video, error) {
+	video, err := s.videoRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find video: %w", err)
+	}
+
+	// Increment view count
+	_ = s.videoRepo.IncrementViewCount(ctx, id)
+
+	return video, nil
+}
+
+func (s *VideoService) List(ctx context.Context) ([]*model.Video, error) {
+	videos, err := s.videoRepo.FindAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find videos: %w", err)
+	}
+
+	return videos, nil
+}
+
+func (s *VideoService) Update(ctx context.Context, userID, videoID int64, req *model.UpdateVideoRequest) (*model.Video, error) {
+	// Check if video exists and belongs to user
+	existingVideo, err := s.videoRepo.FindByID(ctx, videoID)
+	if err != nil {
+		return nil, fmt.Errorf("video not found: %w", err)
+	}
+
+	if existingVideo.UserID != userID {
+		return nil, errors.New("unauthorized to update this video")
+	}
+
+	// Update only provided fields
+	if req.Title != "" {
+		existingVideo.Title = req.Title
+	}
+	if req.Description != "" {
+		existingVideo.Description = req.Description
+	}
+	if req.VideoURL != "" {
+		existingVideo.VideoURL = req.VideoURL
+	}
+	if req.ThumbnailURL != "" {
+		existingVideo.ThumbnailURL = req.ThumbnailURL
+	}
+
+	updatedVideo, err := s.videoRepo.Update(ctx, existingVideo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update video: %w", err)
+	}
+
+	return updatedVideo, nil
+}
+
+func (s *VideoService) Delete(ctx context.Context, userID, videoID int64) error {
+	// Check if video exists and belongs to user
+	existingVideo, err := s.videoRepo.FindByID(ctx, videoID)
+	if err != nil {
+		return fmt.Errorf("video not found: %w", err)
+	}
+
+	if existingVideo.UserID != userID {
+		return errors.New("unauthorized to delete this video")
+	}
+
+	if err := s.videoRepo.Delete(ctx, videoID); err != nil {
+		return fmt.Errorf("failed to delete video: %w", err)
+	}
+
+	return nil
+}
