@@ -9,7 +9,7 @@ import { Video } from '@/types';
 export default function VideoEditPage() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [video, setVideo] = useState<Video | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -18,8 +18,12 @@ export default function VideoEditPage() {
   const [error, setError] = useState('');
 
   // Redirect if not authenticated
-  if (!isAuthenticated) {
+  if (!authLoading && !isAuthenticated) {
     router.push('/login');
+    return null;
+  }
+
+  if (authLoading) {
     return null;
   }
 

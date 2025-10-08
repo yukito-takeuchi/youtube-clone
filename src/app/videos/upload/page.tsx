@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function VideoUploadPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -16,8 +16,12 @@ export default function VideoUploadPage() {
   const [error, setError] = useState('');
 
   // Redirect if not authenticated
-  if (!isAuthenticated) {
+  if (!authLoading && !isAuthenticated) {
     router.push('/login');
+    return null;
+  }
+
+  if (authLoading) {
     return null;
   }
 

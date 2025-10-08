@@ -19,6 +19,7 @@ import {
   Subscriptions as SubscriptionsIcon,
   VideoLibrary as VideoLibraryIcon,
   History as HistoryIcon,
+  AccountCircle as AccountCircleIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +51,10 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
   const menuItems = [
     { icon: <HomeIcon />, text: 'ホーム', path: '/' },
+    ...(isAuthenticated ? [
+      { icon: <VideoCallIcon />, text: 'アップロード', path: '/videos/upload' },
+      { icon: <AccountCircleIcon />, text: 'マイチャンネル', path: '/profile' },
+    ] : []),
     { icon: <SubscriptionsIcon />, text: '登録チャンネル', path: '#', disabled: true },
     { icon: <VideoLibraryIcon />, text: 'ライブラリ', path: '#', disabled: true },
     { icon: <HistoryIcon />, text: '履歴', path: '#', disabled: true },
@@ -106,52 +111,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           </ListItem>
         ))}
 
-        {isAuthenticated && (
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={pathname === '/videos/upload'}
-              onClick={() => handleNavigation('/videos/upload')}
-              sx={{
-                flexDirection: 'column',
-                py: 2,
-                px: 1,
-                gap: 0.5,
-                alignItems: 'center',
-                minHeight: 74,
-                '&.Mui-selected': {
-                  bgcolor: 'action.selected',
-                },
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 'auto',
-                  justifyContent: 'center',
-                  color: pathname === '/videos/upload' ? 'primary.main' : 'inherit',
-                }}
-              >
-                <VideoCallIcon />
-              </ListItemIcon>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: '0.625rem',
-                  textAlign: 'center',
-                  lineHeight: 1.2,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
-                }}
-              >
-                アップロード
-              </Typography>
-            </ListItemButton>
-          </ListItem>
-        )}
 
         <ListItem disablePadding>
           <ListItemButton

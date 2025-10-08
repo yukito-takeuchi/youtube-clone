@@ -77,7 +77,7 @@ export default function VideoCard({ video }: VideoCardProps) {
                 {video.title}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                チャンネル名
+                {video.profile?.channel_name || 'チャンネル名'}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                 {video.view_count.toLocaleString()} 回視聴 •{' '}

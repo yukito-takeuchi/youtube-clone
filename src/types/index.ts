@@ -26,6 +26,7 @@ export interface Video {
   view_count: number;
   created_at: string;
   updated_at: string;
+  profile?: Profile;
 }
 
 export interface AuthResponse {

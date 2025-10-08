@@ -6,6 +6,25 @@ import { Video } from '@/types';
 import { api } from '@/lib/api';
 import VideoPlayer from '@/components/VideoPlayer';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Box,
+  Container,
+  Typography,
+  IconButton,
+  Button,
+  Avatar,
+  Divider,
+  TextField,
+} from '@mui/material';
+import {
+  ThumbUp as ThumbUpIcon,
+  ThumbDown as ThumbDownIcon,
+  Share as ShareIcon,
+  PlaylistAdd as PlaylistAddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
+import Link from 'next/link';
 
 export default function VideoDetailPage() {
   const params = useParams();
@@ -45,91 +64,187 @@ export default function VideoDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1800px] mx-auto px-6 py-6">
-        <div className="text-center">読み込み中...</div>
-      </div>
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Typography>読み込み中...</Typography>
+      </Container>
     );
   }
 
   if (error || !video) {
     return (
-      <div className="max-w-[1800px] mx-auto px-6 py-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error || '動画が見つかりません'}
-        </div>
-      </div>
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Typography color="error">{error || '動画が見つかりません'}</Typography>
+      </Container>
     );
   }
 
   const isOwner = isAuthenticated && user && video.user_id === user.id;
 
   return (
-    <div className="max-w-[1800px] mx-auto px-6 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Box sx={{ display: 'flex', gap: 3 }}>
         {/* Main Content */}
-        <div className="lg:col-span-2">
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Video Player */}
           <VideoPlayer videoUrl={video.video_url} title={video.title} />
 
-          {/* Video Info */}
-          <div className="mt-3">
-            <h1 className="text-xl font-semibold mb-2">{video.title}</h1>
+          {/* Video Title */}
+          <Typography variant="h5" sx={{ mt: 2, mb: 1, fontWeight: 600 }}>
+            {video.title}
+          </Typography>
 
-            <div className="flex items-center justify-between">
-              {/* Channel Info */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center font-semibold">
-                  U
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">チャンネル名</p>
-                  <p className="text-xs text-gray-600">
-                    {video.view_count.toLocaleString()} 回視聴 • {new Date(video.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-                </div>
-              </div>
+          {/* Actions Bar */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              {video.view_count.toLocaleString()} 回視聴 •{' '}
+              {new Date(video.created_at).toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Typography>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                {isOwner && (
-                  <>
-                    <button
-                      onClick={() => router.push(`/videos/${video.id}/edit`)}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                      編集
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      削除
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {/* Like/Dislike */}
+              <Box sx={{ display: 'flex', bgcolor: 'action.hover', borderRadius: 50, overflow: 'hidden' }}>
+                <IconButton size="small" sx={{ borderRadius: 0 }}>
+                  <ThumbUpIcon fontSize="small" />
+                  <Typography variant="body2" sx={{ ml: 1, mr: 1 }}>
+                    0
+                  </Typography>
+                </IconButton>
+                <Divider orientation="vertical" flexItem />
+                <IconButton size="small" sx={{ borderRadius: 0 }}>
+                  <ThumbDownIcon fontSize="small" />
+                </IconButton>
+              </Box>
 
-            {/* Description */}
-            <div className="mt-4 bg-gray-100 rounded-xl p-3">
-              <p className="text-sm whitespace-pre-wrap">{video.description || '説明はありません'}</p>
-            </div>
-          </div>
-        </div>
+              {/* Share */}
+              <IconButton sx={{ bgcolor: 'action.hover', borderRadius: 50 }}>
+                <ShareIcon fontSize="small" />
+                <Typography variant="body2" sx={{ ml: 1, mr: 1 }}>
+                  共有
+                </Typography>
+              </IconButton>
 
-        {/* Sidebar - Related videos placeholder */}
-        <div className="hidden lg:block">
-          <div className="text-sm text-gray-500">
+              {/* Save to Playlist */}
+              <IconButton sx={{ bgcolor: 'action.hover', borderRadius: 50 }}>
+                <PlaylistAddIcon fontSize="small" />
+                <Typography variant="body2" sx={{ ml: 1, mr: 1 }}>
+                  保存
+                </Typography>
+              </IconButton>
+            </Box>
+          </Box>
+
+          <Divider />
+
+          {/* Channel Info */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
+            <Link
+              href={`/profile/${video.user_id}`}
+              style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 12 }}
+            >
+              <Avatar
+                src={video.profile?.icon_url}
+                sx={{ width: 40, height: 40, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+              >
+                {video.profile?.channel_name?.[0]?.toUpperCase() || 'U'}
+              </Avatar>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>
+                  {video.profile?.channel_name || 'チャンネル名'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  登録者数 0人
+                </Typography>
+              </Box>
+            </Link>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {!isOwner && (
+                <Button
+                  variant="contained"
+                  sx={{
+                    bgcolor: 'text.primary',
+                    color: 'background.paper',
+                    borderRadius: 50,
+                    px: 3,
+                    '&:hover': { bgcolor: 'text.secondary' },
+                  }}
+                >
+                  登録
+                </Button>
+              )}
+
+              {isOwner && (
+                <>
+                  <Button
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    onClick={() => router.push(`/videos/${video.id}/edit`)}
+                    sx={{ borderRadius: 50 }}
+                  >
+                    編集
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDelete}
+                    sx={{ borderRadius: 50 }}
+                  >
+                    削除
+                  </Button>
+                </>
+              )}
+            </Box>
+          </Box>
+
+          <Divider />
+
+          {/* Description */}
+          <Box sx={{ bgcolor: 'action.hover', borderRadius: 2, p: 2, mt: 2 }}>
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+              {video.description || '説明はありません'}
+            </Typography>
+          </Box>
+
+          {/* Comments Section */}
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              コメント • 0
+            </Typography>
+
+            {/* Comment Input */}
+            {isAuthenticated && (
+              <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                <Avatar sx={{ width: 40, height: 40 }}>
+                  {user?.email?.[0]?.toUpperCase() || 'U'}
+                </Avatar>
+                <TextField
+                  fullWidth
+                  placeholder="コメントを追加..."
+                  variant="standard"
+                  disabled
+                />
+              </Box>
+            )}
+
+            {/* Comments List */}
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+              コメント機能は未実装です
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Sidebar - Related Videos */}
+        <Box sx={{ width: 400, display: { xs: 'none', lg: 'block' } }}>
+          <Typography variant="body2" color="text.secondary">
             関連動画（未実装）
-          </div>
-        </div>
-      </div>
-    </div>
+          </Typography>
+        </Box>
+      </Box>
+    </Container>
   );
 }
