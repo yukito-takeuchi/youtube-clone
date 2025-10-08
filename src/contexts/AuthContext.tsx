@@ -22,19 +22,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check if user is logged in on mount
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (token) {
-      // Validate token by fetching user profile
-      api.getMyProfile()
-        .then(() => {
-          // Token is valid, we can assume user exists
-          // In a real app, you'd fetch user data here
-          setLoading(false);
-        })
-        .catch(() => {
-          // Token is invalid
-          removeToken();
-          setLoading(false);
-        });
+    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+
+    if (token && storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+        setLoading(false);
+      } catch {
+        removeToken();
+        setLoading(false);
+      }
     } else {
       setLoading(false);
     }
@@ -44,21 +41,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await api.login(data);
     setToken(response.token);
     setUser(response.user);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
   };
 
   const register = async (data: RegisterRequest) => {
     const response = await api.register(data);
     setToken(response.token);
     setUser(response.user);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
   };
 
   const logout = () => {
     api.logout().catch(() => {}); // Fire and forget
     removeToken();
     setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user');
+    }
   };
 
-  const isAuthenticated = !!user || (typeof window !== 'undefined' && !!localStorage.getItem('token'));
+  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated }}>

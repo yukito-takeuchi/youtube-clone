@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, loading, logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -21,7 +21,9 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {isAuthenticated ? (
+          {loading ? (
+            <div className="w-32 h-10"></div>
+          ) : isAuthenticated ? (
             <>
               <Link
                 href="/videos/upload"

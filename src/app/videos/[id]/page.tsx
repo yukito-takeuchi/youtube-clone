@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function VideoDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,8 +78,8 @@ export default function VideoDetailPage() {
             </div>
           </div>
 
-          {/* Edit/Delete buttons for authenticated users */}
-          {isAuthenticated && (
+          {/* Edit/Delete buttons for video owner only */}
+          {isAuthenticated && user && video.user_id === user.id && (
             <div className="flex gap-2">
               <button
                 onClick={() => router.push(`/videos/${video.id}/edit`)}
