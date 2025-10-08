@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Video } from '@/types';
+import { Card, CardMedia, CardContent, Typography, Box, Avatar } from '@mui/material';
 
 interface VideoCardProps {
   video: Video;
@@ -7,38 +8,89 @@ interface VideoCardProps {
 
 export default function VideoCard({ video }: VideoCardProps) {
   return (
-    <Link href={`/videos/${video.id}`} className="block group">
-      <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition">
+    <Link href={`/videos/${video.id}`} style={{ textDecoration: 'none' }}>
+      <Card
+        elevation={0}
+        sx={{
+          cursor: 'pointer',
+          bgcolor: 'transparent',
+          '&:hover .thumbnail': {
+            opacity: 0.9,
+          }
+        }}
+      >
         {/* Thumbnail */}
-        <div className="aspect-video bg-gray-200 relative">
-          {video.thumbnail_url ? (
-            <img
-              src={video.thumbnail_url}
-              alt={video.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
+        <CardMedia
+          component="div"
+          className="thumbnail"
+          sx={{
+            paddingTop: '56.25%', // 16:9 aspect ratio
+            borderRadius: 2,
+            bgcolor: 'grey.300',
+            backgroundImage: video.thumbnail_url ? `url(${video.thumbnail_url})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            transition: 'opacity 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {!video.thumbnail_url && (
+            <Typography variant="body2" color="text.secondary" sx={{ position: 'absolute' }}>
               No Thumbnail
-            </div>
+            </Typography>
           )}
-        </div>
+        </CardMedia>
 
         {/* Info */}
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 line-clamp-2">
-            {video.title}
-          </h3>
-          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-            {video.description}
-          </p>
-          <div className="mt-2 flex items-center text-sm text-gray-500">
-            <span>{video.view_count.toLocaleString()} 回視聴</span>
-            <span className="mx-2">•</span>
-            <span>{new Date(video.created_at).toLocaleDateString('ja-JP')}</span>
-          </div>
-        </div>
-      </div>
+        <CardContent sx={{ px: 0, py: 1.5 }}>
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            {/* Channel Avatar */}
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                bgcolor: 'primary.main',
+                fontSize: '0.875rem',
+                flexShrink: 0,
+              }}
+            >
+              U
+            </Avatar>
+
+            {/* Video Details */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 500,
+                  mb: 0.5,
+                  lineHeight: 1.4,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  color: 'text.primary',
+                }}
+              >
+                {video.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                チャンネル名
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                {video.view_count.toLocaleString()} 回視聴 •{' '}
+                {new Date(video.created_at).toLocaleDateString('ja-JP', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
     </Link>
   );
 }
