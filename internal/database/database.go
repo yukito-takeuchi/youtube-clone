@@ -70,5 +70,30 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 		return fmt.Errorf("failed to create index: %w", err)
 	}
 
+	// Create profiles table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS profiles (
+			id BIGSERIAL PRIMARY KEY,
+			user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+			channel_name VARCHAR(255) NOT NULL DEFAULT '',
+			description TEXT DEFAULT '',
+			icon_url VARCHAR(500) DEFAULT '',
+			banner_url VARCHAR(500) DEFAULT '',
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create profiles table: %w", err)
+	}
+
+	// Create index on user_id for profiles
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create index: %w", err)
+	}
+
 	return nil
 }

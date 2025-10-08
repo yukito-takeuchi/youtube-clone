@@ -13,14 +13,16 @@ import (
 )
 
 type AuthService struct {
-	userRepo  *repository.UserRepository
-	jwtSecret string
+	userRepo    *repository.UserRepository
+	profileRepo *repository.ProfileRepository
+	jwtSecret   string
 }
 
-func NewAuthService(userRepo *repository.UserRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo:  userRepo,
-		jwtSecret: jwtSecret,
+		userRepo:    userRepo,
+		profileRepo: profileRepo,
+		jwtSecret:   jwtSecret,
 	}
 }
 
@@ -35,6 +37,14 @@ func (s *AuthService) Register(ctx context.Context, req *model.RegisterRequest) 
 	user, err := s.userRepo.Create(ctx, req.Email, string(hashedPassword))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Create profile for the new user
+	_, err = s.profileRepo.Create(ctx, user.ID)
+	if err != nil {
+		// If profile creation fails, we still return the user
+		// Profile can be created later
+		fmt.Printf("Warning: failed to create profile for user %d: %v\n", user.ID, err)
 	}
 
 	// Generate token

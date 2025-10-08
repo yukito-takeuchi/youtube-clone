@@ -7,6 +7,7 @@ import (
 
 	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/yukito/video-platform/internal/database"
@@ -54,14 +55,17 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	profileRepo := repository.NewProfileRepository(db)
 	videoRepo := repository.NewVideoRepository(db)
 
 	// Initialize services
-	authService := service.NewAuthService(userRepo, jwtSecret)
+	authService := service.NewAuthService(userRepo, profileRepo, jwtSecret)
+	profileService := service.NewProfileService(profileRepo, minioStorage)
 	videoService := service.NewVideoService(videoRepo, minioStorage)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
+	profileHandler := handler.NewProfileHandler(profileService)
 	videoHandler := handler.NewVideoHandler(videoService)
 
 	// Initialize middleware
@@ -69,6 +73,15 @@ func main() {
 
 	// Setup router
 	r := gin.Default()
+
+	// CORS middleware
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
@@ -84,6 +97,18 @@ func main() {
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/logout", authHandler.Logout)
+		}
+
+		// Profile routes
+		profile := api.Group("/profile")
+		{
+			// Public route
+			profile.GET("/:user_id", profileHandler.GetProfileByUserID)
+
+			// Protected routes
+			profile.Use(authMiddleware.RequireAuth())
+			profile.GET("", profileHandler.GetMyProfile)
+			profile.PUT("", profileHandler.UpdateProfile)
 		}
 
 		// Video routes
