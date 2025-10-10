@@ -14,14 +14,14 @@ import (
 type VideoService struct {
 	videoRepo   *repository.VideoRepository
 	profileRepo *repository.ProfileRepository
-	storage     *storage.MinIOStorage
+	storage     storage.Storage
 }
 
-func NewVideoService(videoRepo *repository.VideoRepository, profileRepo *repository.ProfileRepository, storage *storage.MinIOStorage) *VideoService {
+func NewVideoService(videoRepo *repository.VideoRepository, profileRepo *repository.ProfileRepository, st storage.Storage) *VideoService {
 	return &VideoService{
 		videoRepo:   videoRepo,
 		profileRepo: profileRepo,
-		storage:     storage,
+		storage:     st,
 	}
 }
 

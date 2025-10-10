@@ -30,14 +30,10 @@ func main() {
 		port = "8080"
 	}
 
-	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
-	minioPublicEndpoint := os.Getenv("MINIO_PUBLIC_ENDPOINT")
-	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
-	minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
-	minioBucket := os.Getenv("MINIO_BUCKET")
-	minioUseSSL := false
-	if os.Getenv("MINIO_USE_SSL") != "" {
-		minioUseSSL, _ = strconv.ParseBool(os.Getenv("MINIO_USE_SSL"))
+	// Storage configuration
+	storageType := os.Getenv("STORAGE_TYPE") // "minio" or "gcs"
+	if storageType == "" {
+		storageType = "minio" // Default to MinIO for local development
 	}
 
 	// Initialize database
@@ -47,10 +43,40 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize MinIO storage
-	minioStorage, err := storage.NewMinIOStorage(minioEndpoint, minioPublicEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
-	if err != nil {
-		log.Fatalf("Failed to connect to MinIO: %v", err)
+	// Initialize storage based on type
+	var fileStorage storage.Storage
+
+	if storageType == "gcs" {
+		// GCP Cloud Storage
+		gcpProjectID := os.Getenv("GCP_PROJECT_ID")
+		gcpBucketName := os.Getenv("GCP_BUCKET_NAME")
+		gcpCredentials := os.Getenv("GCP_CREDENTIALS") // Base64-encoded JSON or file path
+
+		gcsStorage, err := storage.NewGCSStorage(context.Background(), gcpProjectID, gcpBucketName, gcpCredentials)
+		if err != nil {
+			log.Fatalf("Failed to connect to GCS: %v", err)
+		}
+		defer gcsStorage.Close()
+		fileStorage = gcsStorage
+		log.Printf("Using GCP Cloud Storage (bucket: %s)", gcpBucketName)
+	} else {
+		// MinIO (default for local development)
+		minioEndpoint := os.Getenv("MINIO_ENDPOINT")
+		minioPublicEndpoint := os.Getenv("MINIO_PUBLIC_ENDPOINT")
+		minioAccessKey := os.Getenv("MINIO_ACCESS_KEY")
+		minioSecretKey := os.Getenv("MINIO_SECRET_KEY")
+		minioBucket := os.Getenv("MINIO_BUCKET")
+		minioUseSSL := false
+		if os.Getenv("MINIO_USE_SSL") != "" {
+			minioUseSSL, _ = strconv.ParseBool(os.Getenv("MINIO_USE_SSL"))
+		}
+
+		minioStorage, err := storage.NewMinIOStorage(minioEndpoint, minioPublicEndpoint, minioAccessKey, minioSecretKey, minioBucket, minioUseSSL)
+		if err != nil {
+			log.Fatalf("Failed to connect to MinIO: %v", err)
+		}
+		fileStorage = minioStorage
+		log.Printf("Using MinIO storage (endpoint: %s)", minioEndpoint)
 	}
 
 	// Initialize repositories
@@ -58,10 +84,10 @@ func main() {
 	profileRepo := repository.NewProfileRepository(db)
 	videoRepo := repository.NewVideoRepository(db)
 
-	// Initialize services
+	// Initialize services with the storage interface
 	authService := service.NewAuthService(userRepo, profileRepo, jwtSecret)
-	profileService := service.NewProfileService(profileRepo, minioStorage)
-	videoService := service.NewVideoService(videoRepo, profileRepo, minioStorage)
+	profileService := service.NewProfileService(profileRepo, fileStorage)
+	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)

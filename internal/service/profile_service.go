@@ -12,13 +12,13 @@ import (
 
 type ProfileService struct {
 	profileRepo *repository.ProfileRepository
-	storage     *storage.MinIOStorage
+	storage     storage.Storage
 }
 
-func NewProfileService(profileRepo *repository.ProfileRepository, storage *storage.MinIOStorage) *ProfileService {
+func NewProfileService(profileRepo *repository.ProfileRepository, st storage.Storage) *ProfileService {
 	return &ProfileService{
 		profileRepo: profileRepo,
-		storage:     storage,
+		storage:     st,
 	}
 }
 
