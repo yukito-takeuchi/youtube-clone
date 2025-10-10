@@ -61,7 +61,7 @@ func main() {
 	// Initialize services
 	authService := service.NewAuthService(userRepo, profileRepo, jwtSecret)
 	profileService := service.NewProfileService(profileRepo, minioStorage)
-	videoService := service.NewVideoService(videoRepo, minioStorage)
+	videoService := service.NewVideoService(videoRepo, profileRepo, minioStorage)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)

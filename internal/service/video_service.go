@@ -12,14 +12,16 @@ import (
 )
 
 type VideoService struct {
-	videoRepo *repository.VideoRepository
-	storage   *storage.MinIOStorage
+	videoRepo   *repository.VideoRepository
+	profileRepo *repository.ProfileRepository
+	storage     *storage.MinIOStorage
 }
 
-func NewVideoService(videoRepo *repository.VideoRepository, storage *storage.MinIOStorage) *VideoService {
+func NewVideoService(videoRepo *repository.VideoRepository, profileRepo *repository.ProfileRepository, storage *storage.MinIOStorage) *VideoService {
 	return &VideoService{
-		videoRepo: videoRepo,
-		storage:   storage,
+		videoRepo:   videoRepo,
+		profileRepo: profileRepo,
+		storage:     storage,
 	}
 }
 
@@ -89,25 +91,67 @@ func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title,
 	return createdVideo, nil
 }
 
-func (s *VideoService) GetByID(ctx context.Context, id int64) (*model.Video, error) {
+func (s *VideoService) GetByID(ctx context.Context, id int64) (*model.VideoWithProfile, error) {
 	video, err := s.videoRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find video: %w", err)
 	}
 
+	// Get profile
+	profile, err := s.profileRepo.FindByUserID(ctx, video.UserID)
+	if err != nil {
+		// If profile not found, return video without profile
+		profile = nil
+	}
+
 	// Increment view count
 	_ = s.videoRepo.IncrementViewCount(ctx, id)
 
-	return video, nil
+	videoWithProfile := &model.VideoWithProfile{
+		ID:           video.ID,
+		UserID:       video.UserID,
+		Title:        video.Title,
+		Description:  video.Description,
+		VideoURL:     video.VideoURL,
+		ThumbnailURL: video.ThumbnailURL,
+		ViewCount:    video.ViewCount,
+		CreatedAt:    video.CreatedAt,
+		UpdatedAt:    video.UpdatedAt,
+		Profile:      profile,
+	}
+
+	return videoWithProfile, nil
 }
 
-func (s *VideoService) List(ctx context.Context) ([]*model.Video, error) {
+func (s *VideoService) List(ctx context.Context) ([]*model.VideoWithProfile, error) {
 	videos, err := s.videoRepo.FindAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find videos: %w", err)
 	}
 
-	return videos, nil
+	// Get profiles for all videos
+	videosWithProfile := make([]*model.VideoWithProfile, len(videos))
+	for i, video := range videos {
+		profile, err := s.profileRepo.FindByUserID(ctx, video.UserID)
+		if err != nil {
+			profile = nil
+		}
+
+		videosWithProfile[i] = &model.VideoWithProfile{
+			ID:           video.ID,
+			UserID:       video.UserID,
+			Title:        video.Title,
+			Description:  video.Description,
+			VideoURL:     video.VideoURL,
+			ThumbnailURL: video.ThumbnailURL,
+			ViewCount:    video.ViewCount,
+			CreatedAt:    video.CreatedAt,
+			UpdatedAt:    video.UpdatedAt,
+			Profile:      profile,
+		}
+	}
+
+	return videosWithProfile, nil
 }
 
 func (s *VideoService) Update(ctx context.Context, userID, videoID int64, req *model.UpdateVideoRequest) (*model.Video, error) {
