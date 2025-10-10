@@ -18,11 +18,14 @@ export default function VideoEditPage() {
   const [error, setError] = useState('');
 
   // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [authLoading, isAuthenticated, router]);
+  if (!authLoading && !isAuthenticated) {
+    router.push('/login');
+    return null;
+  }
+
+  if (authLoading) {
+    return null;
+  }
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -42,14 +45,6 @@ export default function VideoEditPage() {
       fetchVideo();
     }
   }, [params.id]);
-
-  if (authLoading) {
-    return null;
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
