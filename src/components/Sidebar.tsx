@@ -36,7 +36,7 @@ interface SidebarProps {
 export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -51,9 +51,9 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
   const menuItems = [
     { icon: <HomeIcon />, text: 'ホーム', path: '/' },
-    ...(isAuthenticated ? [
+    ...(isAuthenticated && user ? [
       { icon: <VideoCallIcon />, text: 'アップロード', path: '/videos/upload' },
-      { icon: <AccountCircleIcon />, text: 'マイチャンネル', path: '/profile' },
+      { icon: <AccountCircleIcon />, text: 'マイチャンネル', path: `/profile/${user.id}` },
     ] : []),
     { icon: <SubscriptionsIcon />, text: '登録チャンネル', path: '#', disabled: true },
     { icon: <VideoLibraryIcon />, text: 'ライブラリ', path: '#', disabled: true },
