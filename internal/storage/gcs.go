@@ -60,7 +60,8 @@ func (s *GCSStorage) UploadFile(ctx context.Context, file io.Reader, filename st
 	obj := bucket.Object(uniqueFilename)
 	writer := obj.NewWriter(ctx)
 	writer.ContentType = contentType
-	writer.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+	// Note: ACL is not set here because the bucket uses uniform bucket-level access
+	// Public access is configured at the bucket level via IAM policy
 
 	// Copy file content to GCS
 	if _, err := io.Copy(writer, file); err != nil {
