@@ -17,17 +17,18 @@ export default function VideoEditPage() {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
 
-  // Redirect if not authenticated
-  if (!authLoading && !isAuthenticated) {
-    router.push('/login');
-    return null;
-  }
-
-  if (authLoading) {
-    return null;
-  }
-
   useEffect(() => {
+    // Redirect if not authenticated
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    // Don't fetch if still loading auth or not authenticated
+    if (authLoading || !isAuthenticated || !params.id) {
+      return;
+    }
+
     const fetchVideo = async () => {
       try {
         const data = await api.getVideo(Number(params.id));
@@ -41,10 +42,16 @@ export default function VideoEditPage() {
       }
     };
 
-    if (params.id) {
-      fetchVideo();
-    }
-  }, [params.id]);
+    fetchVideo();
+  }, [authLoading, isAuthenticated, params.id, router]);
+
+  if (authLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

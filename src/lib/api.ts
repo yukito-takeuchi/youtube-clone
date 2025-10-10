@@ -31,8 +31,8 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const token = getToken();
-    const headers: HeadersInit = {
-      ...options.headers,
+    const headers: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
     };
 
     // Add Authorization header if token exists

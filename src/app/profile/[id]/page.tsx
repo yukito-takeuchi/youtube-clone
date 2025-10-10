@@ -13,7 +13,6 @@ import {
   Avatar,
   CircularProgress,
   Alert,
-  Grid,
   Button,
   Tabs,
   Tab,
@@ -185,13 +184,11 @@ export default function ProfileDetailPage() {
         {videos.length === 0 ? (
           <Alert severity="info">まだ動画がありません</Alert>
         ) : (
-          <Grid container spacing={2}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
             {videos.map((video) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={video.id}>
-                <VideoCard video={video} />
-              </Grid>
+              <VideoCard key={video.id} video={video} />
             ))}
-          </Grid>
+          </Box>
         )}
       </TabPanel>
 
@@ -200,13 +197,11 @@ export default function ProfileDetailPage() {
         {videos.length === 0 ? (
           <Alert severity="info">まだ動画がありません</Alert>
         ) : (
-          <Grid container spacing={2}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
             {videos.map((video) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={video.id}>
-                <VideoCard video={video} />
-              </Grid>
+              <VideoCard key={video.id} video={video} />
             ))}
-          </Grid>
+          </Box>
         )}
       </TabPanel>
 
