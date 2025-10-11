@@ -215,7 +215,10 @@ class ApiClient {
   }
 
   async getPlaylistsContainingVideo(videoId: number): Promise<number[]> {
-    return this.request(`/api/playlists/check/${videoId}`);
+    const response = await this.request<{ playlist_ids: number[] }>(
+      `/api/playlists/check/${videoId}`
+    );
+    return response.playlist_ids || [];
   }
 
   async getPlaylist(id: number): Promise<Playlist> {
