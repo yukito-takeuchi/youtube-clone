@@ -281,14 +281,12 @@ export default function ChannelCustomizeDialog({
             <Box
               sx={{
                 width: '100%',
-                height: 150,
+                position: 'relative',
+                paddingTop: `${(200 / 1280) * 100}%`, // 15.625% - 実際の表示比率
                 borderRadius: 1,
                 overflow: 'hidden',
                 border: '1px solid',
                 borderColor: 'divider',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 bgcolor: 'grey.200',
               }}
             >
@@ -298,15 +296,31 @@ export default function ChannelCustomizeDialog({
                   src={bannerPreview || profile.banner_url}
                   alt="バナープレビュー"
                   sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
                   }}
                 />
               ) : (
-                <Typography variant="body2" color="text.secondary">
-                  バナー画像なし
-                </Typography>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    バナー画像なし
+                  </Typography>
+                </Box>
               )}
             </Box>
           </Box>
@@ -332,6 +346,9 @@ export default function ChannelCustomizeDialog({
     <Dialog open={showIconCropper} onClose={handleIconCropCancel} maxWidth="md" fullWidth>
       <DialogTitle>アイコンを調整</DialogTitle>
       <DialogContent>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <strong>緑の円内が表示される部分です。</strong>円外は切り取られます。画像をドラッグして位置を調整できます。
+        </Alert>
         <Box sx={{ position: 'relative', width: '100%', height: 400, bgcolor: 'black' }}>
           {iconSrc && (
             <Cropper
@@ -349,7 +366,8 @@ export default function ChannelCustomizeDialog({
                   backgroundColor: '#000',
                 },
                 cropAreaStyle: {
-                  border: '2px solid #ffffff',
+                  border: '4px solid #4CAF50',
+                  boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.75)',
                 },
               }}
             />
@@ -387,7 +405,7 @@ export default function ChannelCustomizeDialog({
       <DialogTitle>バナーを調整</DialogTitle>
       <DialogContent>
         <Alert severity="info" sx={{ mb: 2 }}>
-          バナー画像は16:9の比率でクロップされます。チャンネルページでは高さ200pxで表示され、画像全体が表示されます。
+          <strong>緑の枠内がチャンネルページで表示される部分です。</strong>枠外は切り取られます。画像をドラッグして位置を調整できます。
         </Alert>
         <Box sx={{ position: 'relative', width: '100%', height: 400, bgcolor: 'black' }}>
           {bannerSrc && (
@@ -395,7 +413,7 @@ export default function ChannelCustomizeDialog({
               image={bannerSrc}
               crop={bannerCrop}
               zoom={bannerZoom}
-              aspect={16 / 9}
+              aspect={1280 / 200}
               cropShape="rect"
               showGrid={true}
               onCropChange={setBannerCrop}
@@ -406,7 +424,8 @@ export default function ChannelCustomizeDialog({
                   backgroundColor: '#000',
                 },
                 cropAreaStyle: {
-                  border: '2px solid #ffffff',
+                  border: '4px solid #4CAF50',
+                  boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.75)',
                 },
               }}
             />
