@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Drawer,
   List,
@@ -10,7 +10,7 @@ import {
   Typography,
   Toolbar,
   Box,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Home as HomeIcon,
   VideoCall as VideoCallIcon,
@@ -20,13 +20,13 @@ import {
   VideoLibrary as VideoLibraryIcon,
   History as HistoryIcon,
   AccountCircle as AccountCircleIcon,
-} from '@mui/icons-material';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+} from "@mui/icons-material";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
-const DRAWER_WIDTH_VW = '5vw'; // Viewport width based
-const DRAWER_MIN_WIDTH = '72px';
-const DRAWER_MAX_WIDTH = '80px';
+const DRAWER_WIDTH_VW = "5vw"; // Viewport width based
+const DRAWER_MIN_WIDTH = "72px";
+const DRAWER_MAX_WIDTH = "80px";
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -45,23 +45,39 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push("/login");
     onMobileClose();
   };
 
   const menuItems = [
-    { icon: <HomeIcon />, text: 'ホーム', path: '/' },
-    ...(isAuthenticated && user ? [
-      { icon: <VideoCallIcon />, text: 'アップロード', path: '/videos/upload' },
-      { icon: <AccountCircleIcon />, text: 'マイチャンネル', path: `/profile/${user.id}` },
-    ] : []),
-    { icon: <SubscriptionsIcon />, text: '登録チャンネル', path: '#', disabled: true },
-    { icon: <VideoLibraryIcon />, text: 'ライブラリ', path: '#', disabled: true },
-    { icon: <HistoryIcon />, text: '履歴', path: '#', disabled: true },
+    { icon: <HomeIcon />, text: "ホーム", path: "/" },
+    ...(isAuthenticated && user
+      ? [
+          {
+            icon: <VideoCallIcon />,
+            text: "アップロード",
+            path: "/videos/upload",
+          },
+          { icon: <AccountCircleIcon />, text: "マイページ", path: "/profile" },
+        ]
+      : []),
+    {
+      icon: <SubscriptionsIcon />,
+      text: "登録チャンネル",
+      path: "#",
+      disabled: true,
+    },
+    {
+      icon: <VideoLibraryIcon />,
+      text: "ライブラリ",
+      path: "#",
+      disabled: true,
+    },
+    { icon: <HistoryIcon />, text: "履歴", path: "#", disabled: true },
   ];
 
   const drawerContent = (
-    <Box sx={{ width: '100%', pt: 1 }}>
+    <Box sx={{ width: "100%", pt: 1 }}>
       <List sx={{ px: 0 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
@@ -70,25 +86,25 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               onClick={() => !item.disabled && handleNavigation(item.path)}
               disabled={item.disabled}
               sx={{
-                flexDirection: 'column',
+                flexDirection: "column",
                 py: 2,
                 px: 1,
                 gap: 0.5,
-                alignItems: 'center',
+                alignItems: "center",
                 minHeight: 74,
-                '&.Mui-selected': {
-                  bgcolor: 'action.selected',
+                "&.Mui-selected": {
+                  bgcolor: "action.selected",
                 },
-                '&:hover': {
-                  bgcolor: 'action.hover',
+                "&:hover": {
+                  bgcolor: "action.hover",
                 },
               }}
             >
               <ListItemIcon
                 sx={{
-                  minWidth: 'auto',
-                  justifyContent: 'center',
-                  color: pathname === item.path ? 'primary.main' : 'inherit',
+                  minWidth: "auto",
+                  justifyContent: "center",
+                  color: pathname === item.path ? "primary.main" : "inherit",
                 }}
               >
                 {item.icon}
@@ -96,13 +112,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: '0.625rem',
-                  textAlign: 'center',
+                  fontSize: "0.625rem",
+                  textAlign: "center",
                   lineHeight: 1.2,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "100%",
                 }}
               >
                 {item.text}
@@ -111,26 +127,27 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           </ListItem>
         ))}
 
-
         <ListItem disablePadding>
           <ListItemButton
-            onClick={isAuthenticated ? handleLogout : () => handleNavigation('/login')}
+            onClick={
+              isAuthenticated ? handleLogout : () => handleNavigation("/login")
+            }
             sx={{
-              flexDirection: 'column',
+              flexDirection: "column",
               py: 2,
               px: 1,
               gap: 0.5,
-              alignItems: 'center',
+              alignItems: "center",
               minHeight: 74,
-              '&:hover': {
-                bgcolor: 'action.hover',
+              "&:hover": {
+                bgcolor: "action.hover",
               },
             }}
           >
             <ListItemIcon
               sx={{
-                minWidth: 'auto',
-                justifyContent: 'center',
+                minWidth: "auto",
+                justifyContent: "center",
               }}
             >
               {isAuthenticated ? <LogoutIcon /> : <LoginIcon />}
@@ -138,16 +155,16 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
             <Typography
               variant="caption"
               sx={{
-                fontSize: '0.625rem',
-                textAlign: 'center',
+                fontSize: "0.625rem",
+                textAlign: "center",
                 lineHeight: 1.2,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%',
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
               }}
             >
-              {isAuthenticated ? 'ログアウト' : 'ログイン'}
+              {isAuthenticated ? "ログアウト" : "ログイン"}
             </Typography>
           </ListItemButton>
         </ListItem>
@@ -166,9 +183,9 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           keepMounted: true,
         }}
         sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': {
-            boxSizing: 'border-box',
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
             width: 240,
           },
         }}
@@ -181,17 +198,17 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <Drawer
         variant="permanent"
         sx={{
-          display: { xs: 'none', md: 'block' },
+          display: { xs: "none", md: "block" },
           width: DRAWER_WIDTH_VW,
           minWidth: DRAWER_MIN_WIDTH,
           maxWidth: DRAWER_MAX_WIDTH,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: DRAWER_WIDTH_VW,
             minWidth: DRAWER_MIN_WIDTH,
             maxWidth: DRAWER_MAX_WIDTH,
-            boxSizing: 'border-box',
-            overflowX: 'hidden',
+            boxSizing: "border-box",
+            overflowX: "hidden",
           },
         }}
         open

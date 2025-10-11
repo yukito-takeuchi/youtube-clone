@@ -1,26 +1,37 @@
-import { AuthResponse, LoginRequest, RegisterRequest, Video, Profile } from '@/types';
+import {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  Video,
+  Profile,
+  Playlist,
+  CreatePlaylistRequest,
+  UpdatePlaylistRequest,
+  AddVideoToPlaylistRequest,
+  PlaylistVideo,
+} from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 // Get token from localStorage
 const getToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('token');
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("token");
   }
   return null;
 };
 
 // Set token to localStorage
 export const setToken = (token: string) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('token', token);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("token", token);
   }
 };
 
 // Remove token from localStorage
 export const removeToken = () => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('token');
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
   }
 };
 
@@ -37,12 +48,12 @@ class ApiClient {
 
     // Add Authorization header if token exists
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
     // Add Content-Type for JSON requests
-    if (options.body && typeof options.body === 'string') {
-      headers['Content-Type'] = 'application/json';
+    if (options.body && typeof options.body === "string") {
+      headers["Content-Type"] = "application/json";
     }
 
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -51,8 +62,10 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || 'API request failed');
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(error.error || "API request failed");
     }
 
     return response.json();
@@ -60,28 +73,28 @@ class ApiClient {
 
   // Auth
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    return this.request('/api/auth/register', {
-      method: 'POST',
+    return this.request("/api/auth/register", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async login(data: LoginRequest): Promise<AuthResponse> {
-    return this.request('/api/auth/login', {
-      method: 'POST',
+    return this.request("/api/auth/login", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async logout(): Promise<void> {
-    return this.request('/api/auth/logout', {
-      method: 'POST',
+    return this.request("/api/auth/logout", {
+      method: "POST",
     });
   }
 
   // Videos
   async getVideos(): Promise<Video[]> {
-    return this.request('/api/videos');
+    return this.request("/api/videos");
   }
 
   async getVideo(id: number): Promise<Video> {
@@ -91,7 +104,7 @@ class ApiClient {
   async createVideo(formData: FormData): Promise<Video> {
     const token = getToken();
     const response = await fetch(`${API_URL}/api/videos`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -99,16 +112,21 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || 'Failed to upload video');
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(error.error || "Failed to upload video");
     }
 
     return response.json();
   }
 
-  async updateVideo(id: number, data: { title?: string; description?: string }): Promise<Video> {
+  async updateVideo(
+    id: number,
+    data: { title?: string; description?: string }
+  ): Promise<Video> {
     return this.request(`/api/videos/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   }
@@ -116,7 +134,7 @@ class ApiClient {
   async updateVideoWithFiles(id: number, formData: FormData): Promise<Video> {
     const token = getToken();
     const response = await fetch(`${API_URL}/api/videos/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -124,8 +142,10 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || 'Failed to update video');
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(error.error || "Failed to update video");
     }
 
     return response.json();
@@ -133,13 +153,13 @@ class ApiClient {
 
   async deleteVideo(id: number): Promise<void> {
     return this.request(`/api/videos/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
   // Profile
   async getMyProfile(): Promise<Profile> {
-    return this.request('/api/profile');
+    return this.request("/api/profile");
   }
 
   async getProfile(userId: number): Promise<Profile> {
@@ -149,7 +169,7 @@ class ApiClient {
   async updateProfile(formData: FormData): Promise<Profile> {
     const token = getToken();
     const response = await fetch(`${API_URL}/api/profile`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -157,11 +177,53 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || 'Failed to update profile');
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(error.error || "Failed to update profile");
     }
 
     return response.json();
+  }
+
+  // Playlists
+  async getUserPlaylists(): Promise<Playlist[]> {
+    return this.request("/api/playlists");
+  }
+
+  async createPlaylist(data: CreatePlaylistRequest): Promise<Playlist> {
+    return this.request("/api/playlists", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async addVideoToPlaylist(playlistId: number, videoId: number): Promise<void> {
+    return this.request(`/api/playlists/${playlistId}/videos`, {
+      method: "POST",
+      body: JSON.stringify({ video_id: videoId }),
+    });
+  }
+
+  async removeVideoFromPlaylist(
+    playlistId: number,
+    videoId: number
+  ): Promise<void> {
+    return this.request(`/api/playlists/${playlistId}/videos/${videoId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getPlaylistsContainingVideo(videoId: number): Promise<number[]> {
+    return this.request(`/api/playlists/check/${videoId}`);
+  }
+
+  async getPlaylist(id: number): Promise<Playlist> {
+    return this.request(`/api/playlists/${id}`);
+  }
+
+  async getPlaylistVideos(id: number): Promise<PlaylistVideo[]> {
+    return this.request(`/api/playlists/${id}/videos`);
   }
 }
 
