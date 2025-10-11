@@ -344,6 +344,14 @@ export default function ChannelCustomizeDialog({
               onCropChange={setIconCrop}
               onZoomChange={setIconZoom}
               onCropComplete={onIconCropComplete}
+              style={{
+                containerStyle: {
+                  backgroundColor: '#000',
+                },
+                cropAreaStyle: {
+                  border: '2px solid #ffffff',
+                },
+              }}
             />
           )}
         </Box>
@@ -378,6 +386,9 @@ export default function ChannelCustomizeDialog({
     <Dialog open={showBannerCropper} onClose={handleBannerCropCancel} maxWidth="md" fullWidth>
       <DialogTitle>バナーを調整</DialogTitle>
       <DialogContent>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          バナー画像は16:9の比率でクロップされます。チャンネルページでは高さ200pxで表示され、画像全体が表示されます。
+        </Alert>
         <Box sx={{ position: 'relative', width: '100%', height: 400, bgcolor: 'black' }}>
           {bannerSrc && (
             <Cropper
@@ -390,6 +401,14 @@ export default function ChannelCustomizeDialog({
               onCropChange={setBannerCrop}
               onZoomChange={setBannerZoom}
               onCropComplete={onBannerCropComplete}
+              style={{
+                containerStyle: {
+                  backgroundColor: '#000',
+                },
+                cropAreaStyle: {
+                  border: '2px solid #ffffff',
+                },
+              }}
             />
           )}
         </Box>

@@ -50,6 +50,7 @@ export default function ProfileDetailPage() {
   const [error, setError] = useState('');
   const [tabValue, setTabValue] = useState(0);
   const [customizeDialogOpen, setCustomizeDialogOpen] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const userId = Number(params.id);
   const isOwnChannel = user?.id === userId;
@@ -123,9 +124,33 @@ export default function ProfileDetailPage() {
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                 登録者 0人 • 動画 {videos.length}本
               </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-                {profile.description || '説明はありません'}
-              </Typography>
+              {profile.description && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ whiteSpace: 'pre-wrap', display: 'inline' }}
+                  >
+                    {showFullDescription || profile.description.length <= 50
+                      ? profile.description
+                      : `${profile.description.slice(0, 50)}...`}
+                  </Typography>
+                  {profile.description.length > 50 && (
+                    <Button
+                      size="small"
+                      onClick={() => setShowFullDescription(!showFullDescription)}
+                      sx={{ ml: 1, minWidth: 'auto', p: 0, textTransform: 'none' }}
+                    >
+                      {showFullDescription ? '簡潔に表示' : 'さらに表示'}
+                    </Button>
+                  )}
+                </Box>
+              )}
+              {!profile.description && (
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                  説明はありません
+                </Typography>
+              )}
             </Box>
           </Box>
 
