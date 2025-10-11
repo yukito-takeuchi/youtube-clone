@@ -14,11 +14,6 @@ import {
   Grid,
   Button,
   Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -49,7 +44,25 @@ export default function MyPage() {
   const fetchPlaylists = async () => {
     try {
       const playlistsData = await api.getUserPlaylists();
-      setPlaylists(playlistsData);
+      // 各プレイリストの最初の動画を取得してサムネイルを設定
+      const playlistsWithThumbnails = await Promise.all(
+        playlistsData.map(async (playlist) => {
+          try {
+            const videos = await api.getPlaylistVideos(playlist.id);
+            return {
+              ...playlist,
+              thumbnail:
+                videos.length > 0 ? videos[0].video?.thumbnail_url : null,
+            };
+          } catch (err) {
+            return {
+              ...playlist,
+              thumbnail: null,
+            };
+          }
+        })
+      );
+      setPlaylists(playlistsWithThumbnails);
     } catch (err) {
       console.error("Failed to fetch playlists:", err);
     } finally {
@@ -76,229 +89,242 @@ export default function MyPage() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Grid container spacing={3}>
-        {/* Left Column - Profile Info */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ mb: 3 }}>
-            <CardContent sx={{ textAlign: "center", py: 4 }}>
-              <Avatar
-                src={profile?.icon_url}
-                onClick={handleChannelClick}
-                sx={{
-                  width: 120,
-                  height: 120,
-                  mx: "auto",
-                  mb: 2,
-                  cursor: "pointer",
-                  fontSize: "3rem",
-                  "&:hover": {
-                    opacity: 0.8,
-                  },
-                }}
-              >
-                {profile?.channel_name?.[0]?.toUpperCase() ||
-                  user.email?.[0]?.toUpperCase() ||
-                  "U"}
-              </Avatar>
+      {/* Profile Header */}
+      <Box sx={{ textAlign: "center", mb: 4 }}>
+        <Avatar
+          src={profile?.icon_url}
+          onClick={handleChannelClick}
+          sx={{
+            width: 120,
+            height: 120,
+            mx: "auto",
+            mb: 2,
+            cursor: "pointer",
+            fontSize: "3rem",
+            "&:hover": {
+              opacity: 0.8,
+            },
+          }}
+        >
+          {profile?.channel_name?.[0]?.toUpperCase() ||
+            user.email?.[0]?.toUpperCase() ||
+            "U"}
+        </Avatar>
 
-              <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
-                {profile?.channel_name || "チャンネル名未設定"}
+        <Typography variant="h4" sx={{ mb: 1, fontWeight: 600 }}>
+          {profile?.channel_name || "チャンネル名未設定"}
+        </Typography>
+
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          {user.email}
+        </Typography>
+
+        <Button
+          variant="outlined"
+          startIcon={<EditIcon />}
+          onClick={handleChannelClick}
+          sx={{ mb: 2 }}
+        >
+          チャンネルを管理
+        </Button>
+
+        <Typography variant="caption" display="block" color="text.secondary">
+          アイコンをクリックしてマイチャンネルへ
+        </Typography>
+      </Box>
+
+      {/* Quick Actions */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            クイックアクション
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Button
+              variant="contained"
+              startIcon={<VideoLibraryIcon />}
+              onClick={() => router.push("/videos/upload")}
+            >
+              動画をアップロード
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<SettingsIcon />}
+              onClick={() => router.push("/videos/manage")}
+            >
+              動画を管理
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* History Section */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <HistoryIcon sx={{ mr: 1 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              履歴
+            </Typography>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
+
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <HistoryIcon
+              sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              履歴機能は準備中です
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
+              sx={{ mt: 1 }}
+            >
+              視聴した動画がここに表示されます
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Playlists Section */}
+      <Card>
+        <CardContent>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <PlaylistIcon sx={{ mr: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                再生リスト
               </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              {playlists.length}個のプレイリスト
+            </Typography>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
 
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {user.email}
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+              <CircularProgress size={40} />
+            </Box>
+          ) : playlists.length === 0 ? (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <PlaylistIcon
+                sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                まだプレイリストがありません
               </Typography>
-
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={handleChannelClick}
-                sx={{ mb: 2 }}
-              >
-                チャンネルを管理
-              </Button>
-
               <Typography
                 variant="caption"
-                display="block"
                 color="text.secondary"
+                display="block"
+                sx={{ mt: 1 }}
               >
-                アイコンをクリックしてマイチャンネルへ
+                動画を保存してプレイリストを作成しましょう
               </Typography>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardContent sx={{ py: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                クイックアクション
-              </Typography>
-              <List sx={{ py: 0 }}>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => router.push("/videos/upload")}>
-                    <ListItemIcon>
-                      <VideoLibraryIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="動画をアップロード" />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => router.push("/videos/manage")}>
-                    <ListItemIcon>
-                      <SettingsIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="動画を管理" />
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Right Column - History & Playlists */}
-        <Grid item xs={12} md={8}>
-          {/* History Section */}
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <HistoryIcon sx={{ mr: 1 }} />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  履歴
-                </Typography>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                <HistoryIcon
-                  sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
-                />
-                <Typography variant="body2" color="text.secondary">
-                  履歴機能は準備中です
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  display="block"
-                  sx={{ mt: 1 }}
-                >
-                  視聴した動画がここに表示されます
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Playlists Section */}
-          <Card>
-            <CardContent>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  mb: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <PlaylistIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    再生リスト
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary">
-                  {playlists.length}個のプレイリスト
-                </Typography>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-
-              {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                  <CircularProgress size={40} />
-                </Box>
-              ) : playlists.length === 0 ? (
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <PlaylistIcon
-                    sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    まだプレイリストがありません
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    display="block"
-                    sx={{ mt: 1 }}
+            </Box>
+          ) : (
+            <Grid container spacing={2}>
+              {playlists.map((playlist) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={playlist.id}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      cursor: "pointer",
+                      "&:hover": {
+                        boxShadow: 2,
+                      },
+                      borderRadius: 2,
+                      overflow: "hidden",
+                    }}
+                    onClick={() => router.push(`/playlists/${playlist.id}`)}
                   >
-                    動画を保存してプレイリストを作成しましょう
-                  </Typography>
-                </Box>
-              ) : (
-                <Grid container spacing={2}>
-                  {playlists.map((playlist) => (
-                    <Grid item xs={12} sm={6} md={4} key={playlist.id}>
-                      <Card
-                        variant="outlined"
+                    {/* Thumbnail */}
+                    <Box
+                      sx={{
+                        position: "relative",
+                        paddingTop: "56.25%", // 16:9 aspect ratio
+                        bgcolor: "grey.300",
+                        backgroundImage: playlist.thumbnail
+                          ? `url(${playlist.thumbnail})`
+                          : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    >
+                      {!playlist.thumbnail && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            textAlign: "center",
+                          }}
+                        >
+                          <PlaylistIcon
+                            sx={{ fontSize: 40, color: "text.secondary" }}
+                          />
+                        </Box>
+                      )}
+
+                      {/* Video Count Badge */}
+                      <Box
                         sx={{
-                          cursor: "pointer",
-                          "&:hover": {
-                            bgcolor: "action.hover",
-                          },
+                          position: "absolute",
+                          bottom: 8,
+                          right: 8,
+                          bgcolor: "rgba(0,0,0,0.8)",
+                          color: "white",
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          fontSize: "0.75rem",
                         }}
-                        onClick={() => router.push(`/playlists/${playlist.id}`)}
                       >
-                        <CardContent sx={{ py: 2 }}>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              mb: 1,
-                            }}
-                          >
-                            <PlaylistIcon
-                              sx={{ mr: 1, color: "primary.main" }}
-                            />
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {playlist.title}
-                            </Typography>
-                          </Box>
+                        {playlist.video_count || 0}本
+                      </Box>
+                    </Box>
 
-                          <Typography variant="caption" color="text.secondary">
-                            {playlist.video_count || 0}本の動画 •{" "}
-                            {playlist.visibility === "public"
-                              ? "公開"
-                              : playlist.visibility === "unlisted"
-                              ? "限定公開"
-                              : "非公開"}
-                          </Typography>
+                    <CardContent sx={{ p: 2 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: 600,
+                          mb: 0.5,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {playlist.title}
+                      </Typography>
 
-                          {playlist.description && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{
-                                mt: 1,
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              {playlist.description}
-                            </Typography>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
+                      <Typography variant="caption" color="text.secondary">
+                        {playlist.visibility === "public"
+                          ? "公開"
+                          : playlist.visibility === "unlisted"
+                          ? "限定公開"
+                          : "非公開"}
+                      </Typography>
+                    </CardContent>
+                  </Card>
                 </Grid>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              ))}
+            </Grid>
+          )}
+        </CardContent>
+      </Card>
     </Container>
   );
 }

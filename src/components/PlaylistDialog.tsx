@@ -18,14 +18,16 @@ import {
   Alert,
   Box,
   Divider,
+  IconButton,
 } from "@mui/material";
 import {
   Add as AddIcon,
   PlaylistPlay as PlaylistIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { Playlist } from "@/types";
 import { api } from "@/lib/api";
-import CreatePlaylistDialog from "./CreatePlaylistDialog";
+import CreatePlaylistDialog from "@/components/CreatePlaylistDialog";
 
 interface PlaylistDialogProps {
   open: boolean;
@@ -95,18 +97,28 @@ export default function PlaylistDialog({
         playlistsWithVideo.includes(playlist.id);
 
       if (isInPlaylist) {
+        // プレイリストから削除
         await api.removeVideoFromPlaylist(playlist.id, videoId);
         setPlaylistsWithVideo((prev) =>
           prev.filter((id) => id !== playlist.id)
         );
       } else {
+        // プレイリストに追加（YouTubeと同じ挙動：一度削除してから追加することで最新順になる）
+        try {
+          // 既に存在する場合は削除してから追加
+          await api.removeVideoFromPlaylist(playlist.id, videoId);
+        } catch {
+          // 存在しない場合は無視
+        }
         await api.addVideoToPlaylist(playlist.id, videoId);
-        setPlaylistsWithVideo((prev) => [...prev, playlist.id]);
+        setPlaylistsWithVideo((prev) => {
+          // 重複を避けて追加
+          const filtered = prev.filter((id) => id !== playlist.id);
+          return [...filtered, playlist.id];
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "操作に失敗しました");
-      // エラー時は状態を元に戻す
-      fetchData();
     } finally {
       setUpdatingPlaylist(null);
     }
@@ -139,27 +151,36 @@ export default function PlaylistDialog({
       <Dialog
         open={open}
         onClose={onClose}
-        maxWidth="sm"
+        maxWidth="xs"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: 2 },
+          sx: {
+            borderRadius: 2,
+            maxWidth: 300,
+          },
         }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div">
-            保存先
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            {videoTitle}
-          </Typography>
+        <DialogTitle sx={{ pb: 1, pr: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h6" component="div">
+              保存先
+            </Typography>
+            <IconButton onClick={onClose} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </DialogTitle>
 
         <DialogContent sx={{ px: 0, py: 0 }}>
           {error && (
             <Box sx={{ px: 3, pb: 2 }}>
-              <Alert severity="error" size="small">
-                {error}
-              </Alert>
+              <Alert severity="error">{error}</Alert>
             </Box>
           )}
 
@@ -169,21 +190,6 @@ export default function PlaylistDialog({
             </Box>
           ) : (
             <List sx={{ py: 0 }}>
-              {/* 新しいプレイリストを作成 */}
-              <ListItem disablePadding>
-                <ListItemButton onClick={() => setCreateDialogOpen(true)}>
-                  <ListItemIcon>
-                    <AddIcon />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="新しいプレイリストを作成"
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                  />
-                </ListItemButton>
-              </ListItem>
-
-              {playlists.length > 0 && <Divider />}
-
               {/* 既存のプレイリスト一覧 */}
               {playlists.map((playlist) => {
                 const isInPlaylist =
@@ -221,6 +227,21 @@ export default function PlaylistDialog({
                 );
               })}
 
+              {playlists.length > 0 && <Divider />}
+
+              {/* 新しいプレイリストを作成 */}
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => setCreateDialogOpen(true)}>
+                  <ListItemIcon>
+                    <AddIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="新しいプレイリストを作成"
+                    primaryTypographyProps={{ fontWeight: 500 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+
               {playlists.length === 0 && !loading && (
                 <Box sx={{ textAlign: "center", py: 4, px: 3 }}>
                   <Typography variant="body2" color="text.secondary">
@@ -231,10 +252,6 @@ export default function PlaylistDialog({
             </List>
           )}
         </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose}>完了</Button>
-        </DialogActions>
       </Dialog>
 
       <CreatePlaylistDialog
