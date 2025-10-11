@@ -113,6 +113,24 @@ class ApiClient {
     });
   }
 
+  async updateVideoWithFiles(id: number, formData: FormData): Promise<Video> {
+    const token = getToken();
+    const response = await fetch(`${API_URL}/api/videos/${id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.error || 'Failed to update video');
+    }
+
+    return response.json();
+  }
+
   async deleteVideo(id: number): Promise<void> {
     return this.request(`/api/videos/${id}`, {
       method: 'DELETE',
