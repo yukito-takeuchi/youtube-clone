@@ -1,11 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, LoginRequest, RegisterRequest } from '@/types';
+import { User, Profile, LoginRequest, RegisterRequest } from '@/types';
 import { api, setToken, removeToken } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
+  profile: Profile | null;
   loading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
@@ -17,16 +18,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is logged in on mount
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const storedProfile = typeof window !== 'undefined' ? localStorage.getItem('profile') : null;
 
     if (token && storedUser) {
       try {
         setUser(JSON.parse(storedUser));
+        if (storedProfile) {
+          setProfile(JSON.parse(storedProfile));
+        }
         setLoading(false);
       } catch {
         removeToken();
@@ -44,6 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user', JSON.stringify(response.user));
     }
+
+    // Fetch profile after login
+    try {
+      const profileData = await api.getMyProfile();
+      setProfile(profileData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('profile', JSON.stringify(profileData));
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+    }
   };
 
   const register = async (data: RegisterRequest) => {
@@ -53,21 +70,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user', JSON.stringify(response.user));
     }
+
+    // Fetch profile after registration
+    try {
+      const profileData = await api.getMyProfile();
+      setProfile(profileData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('profile', JSON.stringify(profileData));
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err);
+    }
   };
 
   const logout = () => {
     api.logout().catch(() => {}); // Fire and forget
     removeToken();
     setUser(null);
+    setProfile(null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('user');
+      localStorage.removeItem('profile');
     }
   };
 
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, profile, loading, login, register, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

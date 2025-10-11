@@ -21,8 +21,6 @@ import {
   ThumbDown as ThumbDownIcon,
   Share as ShareIcon,
   PlaylistAdd as PlaylistAddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import Link from 'next/link';
 
@@ -50,17 +48,6 @@ export default function VideoDetailPage() {
       fetchVideo();
     }
   }, [params.id]);
-
-  const handleDelete = async () => {
-    if (!video || !confirm('この動画を削除しますか？')) return;
-
-    try {
-      await api.deleteVideo(video.id);
-      router.push('/');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : '削除に失敗しました');
-    }
-  };
 
   if (loading) {
     return (
@@ -161,44 +148,20 @@ export default function VideoDetailPage() {
               </Box>
             </Link>
 
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              {!isOwner && (
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: 'text.primary',
-                    color: 'background.paper',
-                    borderRadius: 50,
-                    px: 3,
-                    '&:hover': { bgcolor: 'text.secondary' },
-                  }}
-                >
-                  登録
-                </Button>
-              )}
-
-              {isOwner && (
-                <>
-                  <Button
-                    variant="outlined"
-                    startIcon={<EditIcon />}
-                    onClick={() => router.push(`/videos/${video.id}/edit`)}
-                    sx={{ borderRadius: 50 }}
-                  >
-                    編集
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={handleDelete}
-                    sx={{ borderRadius: 50 }}
-                  >
-                    削除
-                  </Button>
-                </>
-              )}
-            </Box>
+            {!isOwner && (
+              <Button
+                variant="contained"
+                sx={{
+                  bgcolor: 'text.primary',
+                  color: 'background.paper',
+                  borderRadius: 50,
+                  px: 3,
+                  '&:hover': { bgcolor: 'text.secondary' },
+                }}
+              >
+                登録
+              </Button>
+            )}
           </Box>
 
           <Divider />

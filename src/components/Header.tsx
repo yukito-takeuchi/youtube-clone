@@ -73,7 +73,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const router = useRouter();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, profile, logout } = useAuth();
   const { mode, toggleTheme } = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -150,8 +150,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 <VideoCallIcon />
               </IconButton>
               <IconButton color="inherit" onClick={handleProfileMenuOpen}>
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}>
-                  {user?.email?.[0].toUpperCase() || 'U'}
+                <Avatar
+                  src={profile?.icon_url}
+                  sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}
+                >
+                  {profile?.channel_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                 </Avatar>
               </IconButton>
               <Menu

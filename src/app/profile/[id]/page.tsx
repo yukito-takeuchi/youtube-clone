@@ -143,7 +143,7 @@ export default function ProfileDetailPage() {
                 <Button
                   variant="outlined"
                   startIcon={<VideoLibraryIcon />}
-                  onClick={() => router.push('/videos/upload')}
+                  onClick={() => router.push('/videos/manage')}
                 >
                   動画を管理
                 </Button>
