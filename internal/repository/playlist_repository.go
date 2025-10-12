@@ -190,7 +190,7 @@ func (r *PlaylistRepository) GetPlaylistVideos(ctx context.Context, playlistID i
 		FROM playlist_videos pv
 		JOIN videos v ON pv.video_id = v.id
 		WHERE pv.playlist_id = $1
-		ORDER BY pv.position ASC
+		ORDER BY pv.created_at DESC
 	`
 
 	rows, err := r.db.Pool.Query(ctx, query, playlistID)
