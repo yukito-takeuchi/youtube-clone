@@ -552,40 +552,38 @@ export default function MyPage() {
         </Box>
 
         {/* Pagination */}
-        {dummyHistoryVideos.length > ITEMS_PER_PAGE && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setHistoryPage(historyPage - 1)}
-              disabled={historyPage === 1}
-              sx={{
-                minWidth: "auto",
-                p: 0.5,
-                "&:disabled": {
-                  opacity: 0.3,
-                },
-              }}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setHistoryPage(historyPage + 1)}
-              disabled={historyPage === Math.ceil(dummyHistoryVideos.length / ITEMS_PER_PAGE)}
-              sx={{
-                minWidth: "auto",
-                p: 0.5,
-                "&:disabled": {
-                  opacity: 0.3,
-                },
-              }}
-            >
-              <ChevronRightIcon />
-            </Button>
-          </Box>
-        )}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setHistoryPage(historyPage - 1)}
+            disabled={historyPage === 1}
+            sx={{
+              minWidth: "auto",
+              p: 0.5,
+              "&:disabled": {
+                opacity: 0.3,
+              },
+            }}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setHistoryPage(historyPage + 1)}
+            disabled={historyPage === Math.ceil(dummyHistoryVideos.length / ITEMS_PER_PAGE)}
+            sx={{
+              minWidth: "auto",
+              p: 0.5,
+              "&:disabled": {
+                opacity: 0.3,
+              },
+            }}
+          >
+            <ChevronRightIcon />
+          </Button>
+        </Box>
       </Box>
 
       {/* Playlists Section */}
@@ -754,40 +752,38 @@ export default function MyPage() {
             </Box>
 
             {/* Pagination */}
-            {playlists.length > ITEMS_PER_PAGE && (
-              <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setPlaylistsPage(playlistsPage - 1)}
-                  disabled={playlistsPage === 1}
-                  sx={{
-                    minWidth: "auto",
-                    p: 0.5,
-                    "&:disabled": {
-                      opacity: 0.3,
-                    },
-                  }}
-                >
-                  <ChevronLeftIcon />
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setPlaylistsPage(playlistsPage + 1)}
-                  disabled={playlistsPage === Math.ceil(playlists.length / ITEMS_PER_PAGE)}
-                  sx={{
-                    minWidth: "auto",
-                    p: 0.5,
-                    "&:disabled": {
-                      opacity: 0.3,
-                    },
-                  }}
-                >
-                  <ChevronRightIcon />
-                </Button>
-              </Box>
-            )}
+            <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setPlaylistsPage(playlistsPage - 1)}
+                disabled={playlistsPage === 1}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setPlaylistsPage(playlistsPage + 1)}
+                disabled={playlistsPage === Math.ceil(playlists.length / ITEMS_PER_PAGE)}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </Box>
           </>
         )}
       </Box>
@@ -900,40 +896,38 @@ export default function MyPage() {
         </Box>
 
         {/* Pagination */}
-        {dummyWatchLaterVideos.length > ITEMS_PER_PAGE && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setWatchLaterPage(watchLaterPage - 1)}
-              disabled={watchLaterPage === 1}
-              sx={{
-                minWidth: "auto",
-                p: 0.5,
-                "&:disabled": {
-                  opacity: 0.3,
-                },
-              }}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setWatchLaterPage(watchLaterPage + 1)}
-              disabled={watchLaterPage === Math.ceil(dummyWatchLaterVideos.length / ITEMS_PER_PAGE)}
-              sx={{
-                minWidth: "auto",
-                p: 0.5,
-                "&:disabled": {
-                  opacity: 0.3,
-                },
-              }}
-            >
-              <ChevronRightIcon />
-            </Button>
-          </Box>
-        )}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setWatchLaterPage(watchLaterPage - 1)}
+            disabled={watchLaterPage === 1}
+            sx={{
+              minWidth: "auto",
+              p: 0.5,
+              "&:disabled": {
+                opacity: 0.3,
+              },
+            }}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setWatchLaterPage(watchLaterPage + 1)}
+            disabled={watchLaterPage === Math.ceil(dummyWatchLaterVideos.length / ITEMS_PER_PAGE)}
+            sx={{
+              minWidth: "auto",
+              p: 0.5,
+              "&:disabled": {
+                opacity: 0.3,
+              },
+            }}
+          >
+            <ChevronRightIcon />
+          </Button>
+        </Box>
       </Box>
 
       {/* Liked Videos Section */}
@@ -1044,40 +1038,38 @@ export default function MyPage() {
         </Box>
 
         {/* Pagination */}
-        {dummyLikedVideos.length > ITEMS_PER_PAGE && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setLikedPage(likedPage - 1)}
-              disabled={likedPage === 1}
-              sx={{
-                minWidth: "auto",
-                p: 0.5,
-                "&:disabled": {
-                  opacity: 0.3,
-                },
-              }}
-            >
-              <ChevronLeftIcon />
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setLikedPage(likedPage + 1)}
-              disabled={likedPage === Math.ceil(dummyLikedVideos.length / ITEMS_PER_PAGE)}
-              sx={{
-                minWidth: "auto",
-                p: 0.5,
-                "&:disabled": {
-                  opacity: 0.3,
-                },
-              }}
-            >
-              <ChevronRightIcon />
-            </Button>
-          </Box>
-        )}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setLikedPage(likedPage - 1)}
+            disabled={likedPage === 1}
+            sx={{
+              minWidth: "auto",
+              p: 0.5,
+              "&:disabled": {
+                opacity: 0.3,
+              },
+            }}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setLikedPage(likedPage + 1)}
+            disabled={likedPage === Math.ceil(dummyLikedVideos.length / ITEMS_PER_PAGE)}
+            sx={{
+              minWidth: "auto",
+              p: 0.5,
+              "&:disabled": {
+                opacity: 0.3,
+              },
+            }}
+          >
+            <ChevronRightIcon />
+          </Button>
+        </Box>
       </Box>
     </Container>
   );
