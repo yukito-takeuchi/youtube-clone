@@ -126,6 +126,101 @@ const dummyHistoryVideos: Video[] = [
       updated_at: "",
     },
   },
+  {
+    id: 6,
+    title: "Webアクセシビリティの実践：誰もが使いやすいWebを",
+    description: "WCAG準拠のアクセシブルなWebサイトの作り方",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video6/320/180",
+    view_count: 9800,
+    user_id: 6,
+    created_at: "2024-01-10T14:00:00Z",
+    updated_at: "2024-01-10T14:00:00Z",
+    profile: {
+      id: 6,
+      user_id: 6,
+      channel_name: "Accessibility Expert",
+      icon_url: "https://picsum.photos/seed/user6/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 7,
+    title: "SQLパフォーマンスチューニング入門",
+    description: "クエリ最適化とインデックス設計の基礎",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video7/320/180",
+    view_count: 11200,
+    user_id: 7,
+    created_at: "2024-01-09T10:30:00Z",
+    updated_at: "2024-01-09T10:30:00Z",
+    profile: {
+      id: 7,
+      user_id: 7,
+      channel_name: "Database Pro",
+      icon_url: "https://picsum.photos/seed/user7/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 8,
+    title: "モダンCSS：GridとFlexboxを使いこなす",
+    description: "CSS GridとFlexboxによる柔軟なレイアウト設計",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video8/320/180",
+    view_count: 8700,
+    user_id: 8,
+    created_at: "2024-01-08T16:15:00Z",
+    updated_at: "2024-01-08T16:15:00Z",
+    profile: {
+      id: 8,
+      user_id: 8,
+      channel_name: "CSS Master",
+      icon_url: "https://picsum.photos/seed/user8/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 9,
+    title: "Git/GitHub実践ワークフロー",
+    description: "チーム開発で使えるGitの実践テクニック",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video9/320/180",
+    view_count: 13900,
+    user_id: 9,
+    created_at: "2024-01-07T11:00:00Z",
+    updated_at: "2024-01-07T11:00:00Z",
+    profile: {
+      id: 9,
+      user_id: 9,
+      channel_name: "Git Guru",
+      icon_url: "https://picsum.photos/seed/user9/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 10,
+    title: "Vue.js 3 Composition API完全ガイド",
+    description: "Vue 3の新機能Composition APIを徹底解説",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video10/320/180",
+    view_count: 10500,
+    user_id: 10,
+    created_at: "2024-01-06T13:30:00Z",
+    updated_at: "2024-01-06T13:30:00Z",
+    profile: {
+      id: 10,
+      user_id: 10,
+      channel_name: "Vue Master",
+      icon_url: "https://picsum.photos/seed/user10/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
 ];
 
 // Dummy watch later videos
@@ -225,6 +320,101 @@ const dummyWatchLaterVideos: Video[] = [
       updated_at: "",
     },
   },
+  {
+    id: 16,
+    title: "Redis入門：高速キャッシュの活用法",
+    description: "Redisを使ったキャッシング戦略とパフォーマンス改善",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video16/320/180",
+    view_count: 14800,
+    user_id: 16,
+    created_at: "2024-01-05T12:00:00Z",
+    updated_at: "2024-01-05T12:00:00Z",
+    profile: {
+      id: 16,
+      user_id: 16,
+      channel_name: "Cache Master",
+      icon_url: "https://picsum.photos/seed/user16/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 17,
+    title: "WebSocketで実現するリアルタイム通信",
+    description: "WebSocketの基礎から実装まで徹底解説",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video17/320/180",
+    view_count: 12300,
+    user_id: 17,
+    created_at: "2024-01-04T15:45:00Z",
+    updated_at: "2024-01-04T15:45:00Z",
+    profile: {
+      id: 17,
+      user_id: 17,
+      channel_name: "Realtime Dev",
+      icon_url: "https://picsum.photos/seed/user17/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 18,
+    title: "Firebaseで作るサーバーレスアプリ",
+    description: "Firebase Authentication、Firestore、Hostingの活用",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video18/320/180",
+    view_count: 19700,
+    user_id: 18,
+    created_at: "2024-01-03T10:20:00Z",
+    updated_at: "2024-01-03T10:20:00Z",
+    profile: {
+      id: 18,
+      user_id: 18,
+      channel_name: "Firebase Expert",
+      icon_url: "https://picsum.photos/seed/user18/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 19,
+    title: "Tailwind CSSで爆速UI開発",
+    description: "Utility-FirstなCSSフレームワークの使い方",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video19/320/180",
+    view_count: 16200,
+    user_id: 19,
+    created_at: "2024-01-02T14:00:00Z",
+    updated_at: "2024-01-02T14:00:00Z",
+    profile: {
+      id: 19,
+      user_id: 19,
+      channel_name: "Tailwind Pro",
+      icon_url: "https://picsum.photos/seed/user19/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 20,
+    title: "Node.js ストリーム処理の極意",
+    description: "大容量データを効率的に処理するストリーム活用法",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video20/320/180",
+    view_count: 11900,
+    user_id: 20,
+    created_at: "2024-01-01T16:30:00Z",
+    updated_at: "2024-01-01T16:30:00Z",
+    profile: {
+      id: 20,
+      user_id: 20,
+      channel_name: "Node.js Master",
+      icon_url: "https://picsum.photos/seed/user20/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
 ];
 
 // Dummy liked videos
@@ -320,6 +510,101 @@ const dummyLikedVideos: Video[] = [
       user_id: 25,
       channel_name: "Test Master",
       icon_url: "https://picsum.photos/seed/user25/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 26,
+    title: "Vim/Neovimカスタマイズ術",
+    description: "エディタを自分好みにカスタマイズする方法",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video26/320/180",
+    view_count: 8900,
+    user_id: 26,
+    created_at: "2023-12-31T14:00:00Z",
+    updated_at: "2023-12-31T14:00:00Z",
+    profile: {
+      id: 26,
+      user_id: 26,
+      channel_name: "Editor Master",
+      icon_url: "https://picsum.photos/seed/user26/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 27,
+    title: "Linux サーバー構築入門",
+    description: "Ubuntu/CentOSでのサーバーセットアップ",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video27/320/180",
+    view_count: 17600,
+    user_id: 27,
+    created_at: "2023-12-30T11:30:00Z",
+    updated_at: "2023-12-30T11:30:00Z",
+    profile: {
+      id: 27,
+      user_id: 27,
+      channel_name: "Linux Admin",
+      icon_url: "https://picsum.photos/seed/user27/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 28,
+    title: "Rustで学ぶシステムプログラミング",
+    description: "安全で高速なRustプログラミングの基礎",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video28/320/180",
+    view_count: 13400,
+    user_id: 28,
+    created_at: "2023-12-29T15:45:00Z",
+    updated_at: "2023-12-29T15:45:00Z",
+    profile: {
+      id: 28,
+      user_id: 28,
+      channel_name: "Rust Developer",
+      icon_url: "https://picsum.photos/seed/user28/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 29,
+    title: "Swift UI実践：iOSアプリ開発",
+    description: "SwiftUIを使ったモダンなiOSアプリ開発",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video29/320/180",
+    view_count: 20100,
+    user_id: 29,
+    created_at: "2023-12-28T10:00:00Z",
+    updated_at: "2023-12-28T10:00:00Z",
+    profile: {
+      id: 29,
+      user_id: 29,
+      channel_name: "iOS Pro",
+      icon_url: "https://picsum.photos/seed/user29/100/100",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 30,
+    title: "Python データ分析入門：PandasとMatplotlib",
+    description: "データ分析・可視化の基礎から応用まで",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/video30/320/180",
+    view_count: 22800,
+    user_id: 30,
+    created_at: "2023-12-27T13:20:00Z",
+    updated_at: "2023-12-27T13:20:00Z",
+    profile: {
+      id: 30,
+      user_id: 30,
+      channel_name: "Data Science Lab",
+      icon_url: "https://picsum.photos/seed/user30/100/100",
       created_at: "",
       updated_at: "",
     },
@@ -460,23 +745,57 @@ export default function MyPage() {
               履歴
             </Typography>
           </Box>
-          <MuiLink
-            component={Link}
-            href="#"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
-              color: "primary.main",
-              fontSize: "0.875rem",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
-          >
-            すべて表示
-            <ChevronRightIcon sx={{ fontSize: 20 }} />
-          </MuiLink>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <MuiLink
+              component={Link}
+              href="#"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "primary.main",
+                fontSize: "0.875rem",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              すべて表示
+              <ChevronRightIcon sx={{ fontSize: 20 }} />
+            </MuiLink>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setHistoryPage(historyPage - 1)}
+                disabled={historyPage === 1}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setHistoryPage(historyPage + 1)}
+                disabled={historyPage === Math.ceil(dummyHistoryVideos.length / ITEMS_PER_PAGE)}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </Box>
+          </Box>
         </Box>
 
         <Box
@@ -550,40 +869,6 @@ export default function MyPage() {
               </Card>
             ))}
         </Box>
-
-        {/* Pagination */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setHistoryPage(historyPage - 1)}
-            disabled={historyPage === 1}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              "&:disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronLeftIcon />
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setHistoryPage(historyPage + 1)}
-            disabled={historyPage === Math.ceil(dummyHistoryVideos.length / ITEMS_PER_PAGE)}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              "&:disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronRightIcon />
-          </Button>
-        </Box>
       </Box>
 
       {/* Playlists Section */}
@@ -605,23 +890,57 @@ export default function MyPage() {
               ({playlists.length})
             </Typography>
           </Box>
-          <MuiLink
-            component={Link}
-            href="#"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
-              color: "primary.main",
-              fontSize: "0.875rem",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
-          >
-            すべて表示
-            <ChevronRightIcon sx={{ fontSize: 20 }} />
-          </MuiLink>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <MuiLink
+              component={Link}
+              href="#"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "primary.main",
+                fontSize: "0.875rem",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              すべて表示
+              <ChevronRightIcon sx={{ fontSize: 20 }} />
+            </MuiLink>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setPlaylistsPage(playlistsPage - 1)}
+                disabled={playlistsPage === 1}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setPlaylistsPage(playlistsPage + 1)}
+                disabled={playlistsPage === Math.ceil(playlists.length / ITEMS_PER_PAGE)}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </Box>
+          </Box>
         </Box>
 
         {loading ? (
@@ -750,40 +1069,6 @@ export default function MyPage() {
                   </Card>
                 ))}
             </Box>
-
-            {/* Pagination */}
-            <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setPlaylistsPage(playlistsPage - 1)}
-                disabled={playlistsPage === 1}
-                sx={{
-                  minWidth: "auto",
-                  p: 0.5,
-                  "&:disabled": {
-                    opacity: 0.3,
-                  },
-                }}
-              >
-                <ChevronLeftIcon />
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setPlaylistsPage(playlistsPage + 1)}
-                disabled={playlistsPage === Math.ceil(playlists.length / ITEMS_PER_PAGE)}
-                sx={{
-                  minWidth: "auto",
-                  p: 0.5,
-                  "&:disabled": {
-                    opacity: 0.3,
-                  },
-                }}
-              >
-                <ChevronRightIcon />
-              </Button>
-            </Box>
           </>
         )}
       </Box>
@@ -804,23 +1089,57 @@ export default function MyPage() {
               あとで見る
             </Typography>
           </Box>
-          <MuiLink
-            component={Link}
-            href="#"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
-              color: "primary.main",
-              fontSize: "0.875rem",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
-          >
-            すべて表示
-            <ChevronRightIcon sx={{ fontSize: 20 }} />
-          </MuiLink>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <MuiLink
+              component={Link}
+              href="#"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "primary.main",
+                fontSize: "0.875rem",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              すべて表示
+              <ChevronRightIcon sx={{ fontSize: 20 }} />
+            </MuiLink>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setWatchLaterPage(watchLaterPage - 1)}
+                disabled={watchLaterPage === 1}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setWatchLaterPage(watchLaterPage + 1)}
+                disabled={watchLaterPage === Math.ceil(dummyWatchLaterVideos.length / ITEMS_PER_PAGE)}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </Box>
+          </Box>
         </Box>
 
         <Box
@@ -894,40 +1213,6 @@ export default function MyPage() {
               </Card>
             ))}
         </Box>
-
-        {/* Pagination */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setWatchLaterPage(watchLaterPage - 1)}
-            disabled={watchLaterPage === 1}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              "&:disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronLeftIcon />
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setWatchLaterPage(watchLaterPage + 1)}
-            disabled={watchLaterPage === Math.ceil(dummyWatchLaterVideos.length / ITEMS_PER_PAGE)}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              "&:disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronRightIcon />
-          </Button>
-        </Box>
       </Box>
 
       {/* Liked Videos Section */}
@@ -946,23 +1231,57 @@ export default function MyPage() {
               高く評価した動画
             </Typography>
           </Box>
-          <MuiLink
-            component={Link}
-            href="#"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
-              color: "primary.main",
-              fontSize: "0.875rem",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
-          >
-            すべて表示
-            <ChevronRightIcon sx={{ fontSize: 20 }} />
-          </MuiLink>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <MuiLink
+              component={Link}
+              href="#"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "primary.main",
+                fontSize: "0.875rem",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
+            >
+              すべて表示
+              <ChevronRightIcon sx={{ fontSize: 20 }} />
+            </MuiLink>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setLikedPage(likedPage - 1)}
+                disabled={likedPage === 1}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setLikedPage(likedPage + 1)}
+                disabled={likedPage === Math.ceil(dummyLikedVideos.length / ITEMS_PER_PAGE)}
+                sx={{
+                  minWidth: "auto",
+                  p: 0.5,
+                  "&:disabled": {
+                    opacity: 0.3,
+                  },
+                }}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </Box>
+          </Box>
         </Box>
 
         <Box
@@ -1035,40 +1354,6 @@ export default function MyPage() {
               </CardContent>
             </Card>
           ))}
-        </Box>
-
-        {/* Pagination */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setLikedPage(likedPage - 1)}
-            disabled={likedPage === 1}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              "&:disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronLeftIcon />
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setLikedPage(likedPage + 1)}
-            disabled={likedPage === Math.ceil(dummyLikedVideos.length / ITEMS_PER_PAGE)}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              "&:disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronRightIcon />
-          </Button>
         </Box>
       </Box>
     </Container>
