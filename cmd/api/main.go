@@ -83,16 +83,19 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	profileRepo := repository.NewProfileRepository(db)
 	videoRepo := repository.NewVideoRepository(db)
+	playlistRepo := repository.NewPlaylistRepository(db)
 
 	// Initialize services with the storage interface
 	authService := service.NewAuthService(userRepo, profileRepo, jwtSecret)
 	profileService := service.NewProfileService(profileRepo, fileStorage)
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
+	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
 	profileHandler := handler.NewProfileHandler(profileService)
 	videoHandler := handler.NewVideoHandler(videoService)
+	playlistHandler := handler.NewPlaylistHandler(playlistService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtSecret)
@@ -158,6 +161,24 @@ func main() {
 			videos.POST("", videoHandler.Create)
 			videos.PUT("/:id", videoHandler.Update)
 			videos.DELETE("/:id", videoHandler.Delete)
+		}
+
+		// Playlist routes
+		playlists := api.Group("/playlists")
+		{
+			// Public routes
+			playlists.GET("/:id", playlistHandler.GetByID)
+			playlists.GET("/:id/videos", playlistHandler.GetPlaylistVideos)
+
+			// Protected routes
+			playlists.Use(authMiddleware.RequireAuth())
+			playlists.POST("", playlistHandler.Create)
+			playlists.GET("", playlistHandler.GetUserPlaylists)
+			playlists.PUT("/:id", playlistHandler.Update)
+			playlists.DELETE("/:id", playlistHandler.Delete)
+			playlists.POST("/:id/videos", playlistHandler.AddVideo)
+			playlists.DELETE("/:id/videos/:videoId", playlistHandler.RemoveVideo)
+			playlists.GET("/check/:videoId", playlistHandler.GetPlaylistsContainingVideo)
 		}
 	}
 

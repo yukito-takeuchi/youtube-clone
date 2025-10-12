@@ -187,6 +187,71 @@ func (s *VideoService) Update(ctx context.Context, userID, videoID int64, req *m
 	return updatedVideo, nil
 }
 
+func (s *VideoService) UpdateWithFiles(ctx context.Context, userID, videoID int64, title, description string, videoFile io.Reader, videoFilename, videoContentType string, videoSize int64, thumbnailFile io.Reader, thumbnailFilename, thumbnailContentType string, thumbnailSize int64) (*model.Video, error) {
+	// Check if video exists and belongs to user
+	existingVideo, err := s.videoRepo.FindByID(ctx, videoID)
+	if err != nil {
+		return nil, fmt.Errorf("video not found: %w", err)
+	}
+
+	if existingVideo.UserID != userID {
+		return nil, errors.New("unauthorized to update this video")
+	}
+
+	// Store old URLs for cleanup
+	oldVideoURL := existingVideo.VideoURL
+	oldThumbnailURL := existingVideo.ThumbnailURL
+
+	// Upload new video file if provided
+	if videoFile != nil {
+		newVideoURL, err := s.storage.UploadFile(ctx, videoFile, videoFilename, videoContentType, videoSize)
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload video: %w", err)
+		}
+		existingVideo.VideoURL = newVideoURL
+	}
+
+	// Upload new thumbnail file if provided
+	if thumbnailFile != nil {
+		newThumbnailURL, err := s.storage.UploadFile(ctx, thumbnailFile, thumbnailFilename, thumbnailContentType, thumbnailSize)
+		if err != nil {
+			// Cleanup newly uploaded video if thumbnail upload fails
+			if videoFile != nil && existingVideo.VideoURL != oldVideoURL {
+				_ = s.storage.DeleteFile(ctx, existingVideo.VideoURL)
+			}
+			return nil, fmt.Errorf("failed to upload thumbnail: %w", err)
+		}
+		existingVideo.ThumbnailURL = newThumbnailURL
+	}
+
+	// Update text fields
+	existingVideo.Title = title
+	existingVideo.Description = description
+
+	// Update database
+	updatedVideo, err := s.videoRepo.Update(ctx, existingVideo)
+	if err != nil {
+		// Cleanup newly uploaded files if database update fails
+		if videoFile != nil && existingVideo.VideoURL != oldVideoURL {
+			_ = s.storage.DeleteFile(ctx, existingVideo.VideoURL)
+		}
+		if thumbnailFile != nil && existingVideo.ThumbnailURL != oldThumbnailURL {
+			_ = s.storage.DeleteFile(ctx, existingVideo.ThumbnailURL)
+		}
+		return nil, fmt.Errorf("failed to update video: %w", err)
+	}
+
+	// Delete old files after successful update
+	if videoFile != nil && oldVideoURL != "" {
+		_ = s.storage.DeleteFile(ctx, oldVideoURL)
+	}
+	if thumbnailFile != nil && oldThumbnailURL != "" {
+		_ = s.storage.DeleteFile(ctx, oldThumbnailURL)
+	}
+
+	return updatedVideo, nil
+}
+
 func (s *VideoService) Delete(ctx context.Context, userID, videoID int64) error {
 	// Check if video exists and belongs to user
 	existingVideo, err := s.videoRepo.FindByID(ctx, videoID)

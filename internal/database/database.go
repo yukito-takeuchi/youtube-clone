@@ -95,5 +95,52 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 		return fmt.Errorf("failed to create index: %w", err)
 	}
 
+	// Create playlists table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS playlists (
+			id BIGSERIAL PRIMARY KEY,
+			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			title VARCHAR(255) NOT NULL,
+			description TEXT DEFAULT '',
+			visibility VARCHAR(20) NOT NULL DEFAULT 'private',
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create playlists table: %w", err)
+	}
+
+	// Create index on user_id for playlists
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_playlists_user_id ON playlists(user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create playlists index: %w", err)
+	}
+
+	// Create playlist_videos table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS playlist_videos (
+			id BIGSERIAL PRIMARY KEY,
+			playlist_id BIGINT NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
+			video_id BIGINT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+			position INT NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			UNIQUE(playlist_id, video_id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create playlist_videos table: %w", err)
+	}
+
+	// Create index on playlist_id for playlist_videos
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_playlist_videos_playlist_id ON playlist_videos(playlist_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create playlist_videos index: %w", err)
+	}
+
 	return nil
 }
