@@ -169,7 +169,7 @@ func main() {
 			// Like routes
 			videos.POST("/:id/like", playlistHandler.LikeVideo)
 			videos.DELETE("/:id/like", playlistHandler.UnlikeVideo)
-			videos.GET("/:id/like-status", playlistHandler.GetLikeStatus)
+			videos.GET("/:id/like", playlistHandler.GetLikeStatus)
 			videos.GET("/liked", playlistHandler.GetLikedVideos)
 		}
 
