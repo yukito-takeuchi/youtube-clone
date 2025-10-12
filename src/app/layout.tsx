@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { Box } from "@mui/material";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,10 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  // 動画詳細ページかどうかをチェック (/videos/123 のようなパス)
+  const isVideoDetailPage = pathname ? /^\/videos\/\d+$/.test(pathname) : false;
 
   return (
     <html lang="ja">
@@ -29,18 +34,15 @@ export default function RootLayout({
           <AuthProvider>
             <Box sx={{ display: 'flex' }}>
               <Header onMenuClick={handleDrawerToggle} />
-              <Sidebar mobileOpen={mobileOpen} onMobileClose={handleDrawerToggle} />
+              {!isVideoDetailPage && (
+                <Sidebar mobileOpen={mobileOpen} onMobileClose={handleDrawerToggle} />
+              )}
               <Box
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  p: 3,
-                  width: {
-                    xs: '100%',
-                    md: 'calc(100% - 5vw)',
-                    lg: 'calc(100% - 5vw)',
-                  },
-                  minWidth: { md: 'calc(100% - 80px)' },
+                  p: isVideoDetailPage ? 2 : 3,
+                  width: '100%',
                   mt: 8,
                 }}
               >

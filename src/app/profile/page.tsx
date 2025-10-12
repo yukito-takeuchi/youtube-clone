@@ -23,6 +23,7 @@ import {
   ChevronRight as ChevronRightIcon,
   WatchLater as WatchLaterIcon,
   ThumbUp as ThumbUpIcon,
+  ChevronLeft as ChevronLeftIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { api } from "@/lib/api";
@@ -331,6 +332,14 @@ export default function MyPage() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination state
+  const [historyPage, setHistoryPage] = useState(1);
+  const [playlistsPage, setPlaylistsPage] = useState(1);
+  const [watchLaterPage, setWatchLaterPage] = useState(1);
+  const [likedPage, setLikedPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 5;
+
   useEffect(() => {
     if (!authLoading) {
       if (!isAuthenticated) {
@@ -474,81 +483,109 @@ export default function MyPage() {
           sx={{
             display: "flex",
             gap: 2,
-            overflowX: "auto",
-            pb: 1,
-            "&::-webkit-scrollbar": {
-              height: 8,
-            },
-            "&::-webkit-scrollbar-track": {
-              bgcolor: "grey.200",
-              borderRadius: 1,
-            },
-            "&::-webkit-scrollbar-thumb": {
-              bgcolor: "grey.400",
-              borderRadius: 1,
-              "&:hover": {
-                bgcolor: "grey.500",
-              },
-            },
+            mb: 2,
           }}
         >
-          {dummyHistoryVideos.map((video) => (
-            <Card
-              key={video.id}
-              elevation={0}
-              sx={{
-                minWidth: 250,
-                maxWidth: 250,
-                bgcolor: "transparent",
-                cursor: "pointer",
-                "&:hover": {
-                  "& .thumbnail": {
-                    transform: "scale(1.02)",
+          {dummyHistoryVideos
+            .slice((historyPage - 1) * ITEMS_PER_PAGE, historyPage * ITEMS_PER_PAGE)
+            .map((video) => (
+              <Card
+                key={video.id}
+                elevation={0}
+                sx={{
+                  width: {
+                    xs: "100%",
+                    sm: "calc((100% - 16px) / 2)",
+                    md: "calc((100% - 32px) / 3)",
+                    lg: "calc((100% - 64px) / 5)",
                   },
+                  flex: "0 0 auto",
+                  bgcolor: "transparent",
+                  cursor: "pointer",
+                  "&:hover": {
+                    "& .thumbnail": {
+                      transform: "scale(1.02)",
+                    },
+                  },
+                }}
+                onClick={() => router.push(`/videos/${video.id}`)}
+              >
+                <CardMedia
+                  className="thumbnail"
+                  component="img"
+                  image={video.thumbnail_url}
+                  alt={video.title}
+                  sx={{
+                    borderRadius: 2,
+                    aspectRatio: "16/9",
+                    transition: "transform 0.2s",
+                  }}
+                />
+                <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 600,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      lineHeight: 1.4,
+                      minHeight: "2.8em",
+                    }}
+                  >
+                    {video.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    {video.profile?.channel_name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {video.view_count.toLocaleString()}回視聴
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+        </Box>
+
+        {/* Pagination */}
+        {dummyHistoryVideos.length > ITEMS_PER_PAGE && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setHistoryPage(historyPage - 1)}
+              disabled={historyPage === 1}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                "&:disabled": {
+                  opacity: 0.3,
                 },
               }}
-              onClick={() => router.push(`/videos/${video.id}`)}
             >
-              <CardMedia
-                className="thumbnail"
-                component="img"
-                image={video.thumbnail_url}
-                alt={video.title}
-                sx={{
-                  borderRadius: 2,
-                  aspectRatio: "16/9",
-                  transition: "transform 0.2s",
-                }}
-              />
-              <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    fontWeight: 600,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    lineHeight: 1.4,
-                    minHeight: "2.8em",
-                  }}
-                >
-                  {video.title}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: "block", mt: 0.5 }}
-                >
-                  {video.profile?.channel_name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {video.view_count.toLocaleString()}回視聴
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setHistoryPage(historyPage + 1)}
+              disabled={historyPage === Math.ceil(dummyHistoryVideos.length / ITEMS_PER_PAGE)}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                "&:disabled": {
+                  opacity: 0.3,
+                },
+              }}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {/* Playlists Section */}
@@ -608,121 +645,150 @@ export default function MyPage() {
             </Typography>
           </Box>
         ) : (
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              overflowX: "auto",
-              pb: 1,
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                bgcolor: "grey.200",
-                borderRadius: 1,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                bgcolor: "grey.400",
-                borderRadius: 1,
-                "&:hover": {
-                  bgcolor: "grey.500",
-                },
-              },
-            }}
-          >
-            {playlists.slice(0, 5).map((playlist) => (
-              <Card
-                key={playlist.id}
-                variant="outlined"
-                sx={{
-                  minWidth: 250,
-                  maxWidth: 250,
-                  height: 240,
-                  cursor: "pointer",
-                  "&:hover": {
-                    boxShadow: 2,
-                  },
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-                onClick={() => router.push(`/playlists/${playlist.id}`)}
-              >
-                {/* Thumbnail */}
-                <Box
-                  sx={{
-                    position: "relative",
-                    paddingTop: "56.25%",
-                    bgcolor: "grey.300",
-                    backgroundImage: playlist.thumbnail
-                      ? `url(${playlist.thumbnail})`
-                      : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                >
-                  {!playlist.thumbnail && (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                mb: 2,
+              }}
+            >
+              {playlists
+                .slice((playlistsPage - 1) * ITEMS_PER_PAGE, playlistsPage * ITEMS_PER_PAGE)
+                .map((playlist) => (
+                  <Card
+                    key={playlist.id}
+                    variant="outlined"
+                    sx={{
+                      width: {
+                        xs: "100%",
+                        sm: "calc((100% - 16px) / 2)",
+                        md: "calc((100% - 32px) / 3)",
+                        lg: "calc((100% - 64px) / 5)",
+                      },
+                      flex: "0 0 auto",
+                      cursor: "pointer",
+                      "&:hover": {
+                        boxShadow: 2,
+                      },
+                      borderRadius: 2,
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                    onClick={() => router.push(`/playlists/${playlist.id}`)}
+                  >
+                    {/* Thumbnail */}
                     <Box
                       sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        textAlign: "center",
+                        position: "relative",
+                        paddingTop: "56.25%",
+                        bgcolor: "grey.300",
+                        backgroundImage: playlist.thumbnail
+                          ? `url(${playlist.thumbnail})`
+                          : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }}
                     >
-                      <PlaylistIcon sx={{ fontSize: 40, color: "text.secondary" }} />
+                      {!playlist.thumbnail && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            textAlign: "center",
+                          }}
+                        >
+                          <PlaylistIcon sx={{ fontSize: 40, color: "text.secondary" }} />
+                        </Box>
+                      )}
+
+                      {/* Video Count Badge */}
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          bottom: 8,
+                          right: 8,
+                          bgcolor: "rgba(0,0,0,0.8)",
+                          color: "white",
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        {playlist.video_count || 0}本
+                      </Box>
                     </Box>
-                  )}
 
-                  {/* Video Count Badge */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 8,
-                      right: 8,
-                      bgcolor: "rgba(0,0,0,0.8)",
-                      color: "white",
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      fontSize: "0.75rem",
-                    }}
-                  >
-                    {playlist.video_count || 0}本
-                  </Box>
-                </Box>
+                    <CardContent sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column" }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: 600,
+                          mb: 0.5,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          lineHeight: 1.4,
+                          minHeight: "2.8em",
+                          flex: 1,
+                        }}
+                      >
+                        {playlist.title}
+                      </Typography>
 
-                <CardContent sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column" }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      fontWeight: 600,
-                      mb: 0.5,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      lineHeight: 1.4,
-                      minHeight: "2.8em",
-                      flex: 1,
-                    }}
-                  >
-                    {playlist.title}
-                  </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {playlist.visibility === "public"
+                          ? "公開"
+                          : playlist.visibility === "unlisted"
+                          ? "限定公開"
+                          : "非公開"}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                ))}
+            </Box>
 
-                  <Typography variant="caption" color="text.secondary">
-                    {playlist.visibility === "public"
-                      ? "公開"
-                      : playlist.visibility === "unlisted"
-                      ? "限定公開"
-                      : "非公開"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
+            {/* Pagination */}
+            {playlists.length > ITEMS_PER_PAGE && (
+              <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setPlaylistsPage(playlistsPage - 1)}
+                  disabled={playlistsPage === 1}
+                  sx={{
+                    minWidth: "auto",
+                    p: 0.5,
+                    "&:disabled": {
+                      opacity: 0.3,
+                    },
+                  }}
+                >
+                  <ChevronLeftIcon />
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setPlaylistsPage(playlistsPage + 1)}
+                  disabled={playlistsPage === Math.ceil(playlists.length / ITEMS_PER_PAGE)}
+                  sx={{
+                    minWidth: "auto",
+                    p: 0.5,
+                    "&:disabled": {
+                      opacity: 0.3,
+                    },
+                  }}
+                >
+                  <ChevronRightIcon />
+                </Button>
+              </Box>
+            )}
+          </>
         )}
       </Box>
 
@@ -765,81 +831,109 @@ export default function MyPage() {
           sx={{
             display: "flex",
             gap: 2,
-            overflowX: "auto",
-            pb: 1,
-            "&::-webkit-scrollbar": {
-              height: 8,
-            },
-            "&::-webkit-scrollbar-track": {
-              bgcolor: "grey.200",
-              borderRadius: 1,
-            },
-            "&::-webkit-scrollbar-thumb": {
-              bgcolor: "grey.400",
-              borderRadius: 1,
-              "&:hover": {
-                bgcolor: "grey.500",
-              },
-            },
+            mb: 2,
           }}
         >
-          {dummyWatchLaterVideos.map((video) => (
-            <Card
-              key={video.id}
-              elevation={0}
-              sx={{
-                minWidth: 250,
-                maxWidth: 250,
-                bgcolor: "transparent",
-                cursor: "pointer",
-                "&:hover": {
-                  "& .thumbnail": {
-                    transform: "scale(1.02)",
+          {dummyWatchLaterVideos
+            .slice((watchLaterPage - 1) * ITEMS_PER_PAGE, watchLaterPage * ITEMS_PER_PAGE)
+            .map((video) => (
+              <Card
+                key={video.id}
+                elevation={0}
+                sx={{
+                  width: {
+                    xs: "100%",
+                    sm: "calc((100% - 16px) / 2)",
+                    md: "calc((100% - 32px) / 3)",
+                    lg: "calc((100% - 64px) / 5)",
                   },
+                  flex: "0 0 auto",
+                  bgcolor: "transparent",
+                  cursor: "pointer",
+                  "&:hover": {
+                    "& .thumbnail": {
+                      transform: "scale(1.02)",
+                    },
+                  },
+                }}
+                onClick={() => router.push(`/videos/${video.id}`)}
+              >
+                <CardMedia
+                  className="thumbnail"
+                  component="img"
+                  image={video.thumbnail_url}
+                  alt={video.title}
+                  sx={{
+                    borderRadius: 2,
+                    aspectRatio: "16/9",
+                    transition: "transform 0.2s",
+                  }}
+                />
+                <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 600,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      lineHeight: 1.4,
+                      minHeight: "2.8em",
+                    }}
+                  >
+                    {video.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    {video.profile?.channel_name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {video.view_count.toLocaleString()}回視聴
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+        </Box>
+
+        {/* Pagination */}
+        {dummyWatchLaterVideos.length > ITEMS_PER_PAGE && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setWatchLaterPage(watchLaterPage - 1)}
+              disabled={watchLaterPage === 1}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                "&:disabled": {
+                  opacity: 0.3,
                 },
               }}
-              onClick={() => router.push(`/videos/${video.id}`)}
             >
-              <CardMedia
-                className="thumbnail"
-                component="img"
-                image={video.thumbnail_url}
-                alt={video.title}
-                sx={{
-                  borderRadius: 2,
-                  aspectRatio: "16/9",
-                  transition: "transform 0.2s",
-                }}
-              />
-              <CardContent sx={{ p: 1, "&:last-child": { pb: 1 } }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    fontWeight: 600,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    lineHeight: 1.4,
-                    minHeight: "2.8em",
-                  }}
-                >
-                  {video.title}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: "block", mt: 0.5 }}
-                >
-                  {video.profile?.channel_name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {video.view_count.toLocaleString()}回視聴
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setWatchLaterPage(watchLaterPage + 1)}
+              disabled={watchLaterPage === Math.ceil(dummyWatchLaterVideos.length / ITEMS_PER_PAGE)}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                "&:disabled": {
+                  opacity: 0.3,
+                },
+              }}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {/* Liked Videos Section */}
@@ -881,41 +975,33 @@ export default function MyPage() {
           sx={{
             display: "flex",
             gap: 2,
-            overflowX: "auto",
-            pb: 1,
-            "&::-webkit-scrollbar": {
-              height: 8,
-            },
-            "&::-webkit-scrollbar-track": {
-              bgcolor: "grey.200",
-              borderRadius: 1,
-            },
-            "&::-webkit-scrollbar-thumb": {
-              bgcolor: "grey.400",
-              borderRadius: 1,
-              "&:hover": {
-                bgcolor: "grey.500",
-              },
-            },
+            mb: 2,
           }}
         >
-          {dummyLikedVideos.map((video) => (
-            <Card
-              key={video.id}
-              elevation={0}
-              sx={{
-                minWidth: 250,
-                maxWidth: 250,
-                bgcolor: "transparent",
-                cursor: "pointer",
-                "&:hover": {
-                  "& .thumbnail": {
-                    transform: "scale(1.02)",
+          {dummyLikedVideos
+            .slice((likedPage - 1) * ITEMS_PER_PAGE, likedPage * ITEMS_PER_PAGE)
+            .map((video) => (
+              <Card
+                key={video.id}
+                elevation={0}
+                sx={{
+                  width: {
+                    xs: "100%",
+                    sm: "calc((100% - 16px) / 2)",
+                    md: "calc((100% - 32px) / 3)",
+                    lg: "calc((100% - 64px) / 5)",
                   },
-                },
-              }}
-              onClick={() => router.push(`/videos/${video.id}`)}
-            >
+                  flex: "0 0 auto",
+                  bgcolor: "transparent",
+                  cursor: "pointer",
+                  "&:hover": {
+                    "& .thumbnail": {
+                      transform: "scale(1.02)",
+                    },
+                  },
+                }}
+                onClick={() => router.push(`/videos/${video.id}`)}
+              >
               <CardMedia
                 className="thumbnail"
                 component="img"
@@ -956,6 +1042,42 @@ export default function MyPage() {
             </Card>
           ))}
         </Box>
+
+        {/* Pagination */}
+        {dummyLikedVideos.length > ITEMS_PER_PAGE && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setLikedPage(likedPage - 1)}
+              disabled={likedPage === 1}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                "&:disabled": {
+                  opacity: 0.3,
+                },
+              }}
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setLikedPage(likedPage + 1)}
+              disabled={likedPage === Math.ceil(dummyLikedVideos.length / ITEMS_PER_PAGE)}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                "&:disabled": {
+                  opacity: 0.3,
+                },
+              }}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </Box>
+        )}
       </Box>
     </Container>
   );
