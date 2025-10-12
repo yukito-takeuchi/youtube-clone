@@ -107,22 +107,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {/* Logo */}
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-          <Box
-            sx={{
-              bgcolor: 'primary.main',
-              color: 'white',
-              px: 1,
-              py: 0.5,
-              borderRadius: 1,
-              fontWeight: 'bold',
-              fontSize: '1.25rem',
-              mr: 0.5,
-            }}
-          >
-            YT
+          <Box sx={{ display: 'flex', alignItems: 'center', color: 'primary.main' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/>
+              <path d="m10 15 5-3-5-3z"/>
+            </svg>
           </Box>
-          <Typography variant="h6" component="div" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 600 }}>
-            Clone
+          <Typography variant="h6" component="div" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 600, ml: 1, color: 'text.primary' }}>
+            YouTube Clone
           </Typography>
         </Link>
 
