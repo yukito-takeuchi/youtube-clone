@@ -13,16 +13,18 @@ import (
 )
 
 type AuthService struct {
-	userRepo    *repository.UserRepository
-	profileRepo *repository.ProfileRepository
-	jwtSecret   string
+	userRepo     *repository.UserRepository
+	profileRepo  *repository.ProfileRepository
+	playlistRepo *repository.PlaylistRepository
+	jwtSecret    string
 }
 
-func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, playlistRepo *repository.PlaylistRepository, jwtSecret string) *AuthService {
 	return &AuthService{
-		userRepo:    userRepo,
-		profileRepo: profileRepo,
-		jwtSecret:   jwtSecret,
+		userRepo:     userRepo,
+		profileRepo:  profileRepo,
+		playlistRepo: playlistRepo,
+		jwtSecret:    jwtSecret,
 	}
 }
 
@@ -45,6 +47,20 @@ func (s *AuthService) Register(ctx context.Context, req *model.RegisterRequest) 
 		// If profile creation fails, we still return the user
 		// Profile can be created later
 		fmt.Printf("Warning: failed to create profile for user %d: %v\n", user.ID, err)
+	}
+
+	// Create default "Liked Videos" playlist
+	likedPlaylist := &model.Playlist{
+		UserID:      user.ID,
+		Title:       "高く評価した動画",
+		Description: "いいねした動画が自動的に保存されます",
+		Visibility:  "private",
+	}
+	_, err = s.playlistRepo.Create(ctx, likedPlaylist)
+	if err != nil {
+		// If playlist creation fails, we still return the user
+		// Playlist can be created later
+		fmt.Printf("Warning: failed to create liked playlist for user %d: %v\n", user.ID, err)
 	}
 
 	// Generate token

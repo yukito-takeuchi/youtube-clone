@@ -270,3 +270,30 @@ func (r *PlaylistRepository) GetPlaylistsContainingVideo(ctx context.Context, us
 
 	return playlistIDs, nil
 }
+
+// FindLikedPlaylistByUserID finds the "Liked Videos" playlist for a user
+func (r *PlaylistRepository) FindLikedPlaylistByUserID(ctx context.Context, userID int64) (*model.Playlist, error) {
+	query := `
+		SELECT id, user_id, title, description, visibility, created_at, updated_at
+		FROM playlists
+		WHERE user_id = $1 AND title = '高く評価した動画'
+		LIMIT 1
+	`
+
+	var playlist model.Playlist
+	err := r.db.Pool.QueryRow(ctx, query, userID).Scan(
+		&playlist.ID,
+		&playlist.UserID,
+		&playlist.Title,
+		&playlist.Description,
+		&playlist.Visibility,
+		&playlist.CreatedAt,
+		&playlist.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &playlist, nil
+}

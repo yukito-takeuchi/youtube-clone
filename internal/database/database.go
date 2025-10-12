@@ -142,5 +142,34 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 		return fmt.Errorf("failed to create playlist_videos index: %w", err)
 	}
 
+	// Create subscriptions table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS subscriptions (
+			id BIGSERIAL PRIMARY KEY,
+			subscriber_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			subscribed_to_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			UNIQUE(subscriber_user_id, subscribed_to_user_id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create subscriptions table: %w", err)
+	}
+
+	// Create indexes for subscriptions
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_subscriptions_subscriber ON subscriptions(subscriber_user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create subscriptions subscriber index: %w", err)
+	}
+
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_subscriptions_subscribed_to ON subscriptions(subscribed_to_user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create subscriptions subscribed_to index: %w", err)
+	}
+
 	return nil
 }
