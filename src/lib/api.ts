@@ -9,6 +9,7 @@ import {
   UpdatePlaylistRequest,
   AddVideoToPlaylistRequest,
   PlaylistVideo,
+  SubscriptionWithProfile,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -227,6 +228,70 @@ class ApiClient {
 
   async getPlaylistVideos(id: number): Promise<PlaylistVideo[]> {
     return this.request(`/api/playlists/${id}/videos`);
+  }
+
+  // Subscriptions
+  async subscribeToChannel(userId: number): Promise<void> {
+    return this.request(`/api/users/${userId}/subscription`, {
+      method: "POST",
+    });
+  }
+
+  async unsubscribeFromChannel(userId: number): Promise<void> {
+    return this.request(`/api/users/${userId}/subscription`, {
+      method: "DELETE",
+    });
+  }
+
+  async getSubscriptionStatus(userId: number): Promise<boolean> {
+    const response = await this.request<{ is_subscribed: boolean }>(
+      `/api/users/${userId}/subscription`
+    );
+    return response.is_subscribed;
+  }
+
+  async getSubscriberCount(userId: number): Promise<number> {
+    const response = await this.request<{ subscriber_count: number }>(
+      `/api/users/${userId}/subscriber-count`
+    );
+    return response.subscriber_count;
+  }
+
+  async getSubscribedChannels(): Promise<SubscriptionWithProfile[]> {
+    return this.request("/api/subscriptions");
+  }
+
+  async getSubscriptionFeed(
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<Video[]> {
+    return this.request(
+      `/api/feed/subscriptions?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  // Likes
+  async likeVideo(videoId: number): Promise<void> {
+    return this.request(`/api/videos/${videoId}/like`, {
+      method: "POST",
+    });
+  }
+
+  async unlikeVideo(videoId: number): Promise<void> {
+    return this.request(`/api/videos/${videoId}/like`, {
+      method: "DELETE",
+    });
+  }
+
+  async getLikeStatus(videoId: number): Promise<boolean> {
+    const response = await this.request<{ is_liked: boolean }>(
+      `/api/videos/${videoId}/like`
+    );
+    return response.is_liked;
+  }
+
+  async getLikedVideos(): Promise<PlaylistVideo[]> {
+    return this.request("/api/videos/liked");
   }
 }
 

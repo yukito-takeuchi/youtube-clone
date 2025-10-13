@@ -269,6 +269,13 @@ export default function VideoDetailPage() {
   const [error, setError] = useState("");
   const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
 
+  // Like state
+  const [isLiked, setIsLiked] = useState(false);
+
+  // Subscription state
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState(0);
+
   useEffect(() => {
     const fetchVideo = async () => {
       try {
@@ -288,6 +295,30 @@ export default function VideoDetailPage() {
     }
   }, [params.id]);
 
+  // Fetch like status and subscription status
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      if (!video || !isAuthenticated) return;
+
+      try {
+        // Fetch like status
+        const likeStatus = await api.getLikeStatus(video.id);
+        setIsLiked(likeStatus);
+
+        // Fetch subscription status and subscriber count
+        const subStatus = await api.getSubscriptionStatus(video.user_id);
+        setIsSubscribed(subStatus);
+
+        const subCount = await api.getSubscriberCount(video.user_id);
+        setSubscriberCount(subCount);
+      } catch (err) {
+        console.error("Failed to fetch statuses:", err);
+      }
+    };
+
+    fetchStatuses();
+  }, [video, isAuthenticated]);
+
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -305,6 +336,50 @@ export default function VideoDetailPage() {
   }
 
   const isOwner = isAuthenticated && user && video.user_id === user.id;
+
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (!video) return;
+
+    try {
+      if (isLiked) {
+        await api.unlikeVideo(video.id);
+        setIsLiked(false);
+      } else {
+        await api.likeVideo(video.id);
+        setIsLiked(true);
+      }
+    } catch (err) {
+      console.error("Failed to toggle like:", err);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (!video) return;
+
+    try {
+      if (isSubscribed) {
+        await api.unsubscribeFromChannel(video.user_id);
+        setIsSubscribed(false);
+        setSubscriberCount((prev) => prev - 1);
+      } else {
+        await api.subscribeToChannel(video.user_id);
+        setIsSubscribed(true);
+        setSubscriberCount((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error("Failed to toggle subscription:", err);
+    }
+  };
 
   const handleSaveClick = () => {
     if (!isAuthenticated) {
@@ -355,10 +430,24 @@ export default function VideoDetailPage() {
                   overflow: "hidden",
                 }}
               >
-                <IconButton size="small" sx={{ borderRadius: 0 }}>
-                  <ThumbUpIcon fontSize="small" />
-                  <Typography variant="body2" sx={{ ml: 1, mr: 1 }}>
-                    0
+                <IconButton
+                  size="small"
+                  sx={{ borderRadius: 0 }}
+                  onClick={handleLike}
+                >
+                  <ThumbUpIcon
+                    fontSize="small"
+                    sx={{ color: isLiked ? "primary.main" : "inherit" }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      ml: 1,
+                      mr: 1,
+                      color: isLiked ? "primary.main" : "inherit",
+                    }}
+                  >
+                    {isLiked ? "いいね" : ""}
                   </Typography>
                 </IconButton>
                 <Divider orientation="vertical" flexItem />
@@ -432,7 +521,7 @@ export default function VideoDetailPage() {
                   {video.profile?.channel_name || "チャンネル名"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  登録者数 0人
+                  登録者数 {subscriberCount.toLocaleString()}人
                 </Typography>
               </Box>
             </Link>
@@ -440,15 +529,24 @@ export default function VideoDetailPage() {
             {!isOwner && (
               <Button
                 variant="contained"
+                onClick={handleSubscribe}
                 sx={{
-                  bgcolor: "text.primary",
-                  color: "background.paper",
+                  bgcolor: isSubscribed
+                    ? "action.hover"
+                    : "text.primary",
+                  color: isSubscribed
+                    ? "text.primary"
+                    : "background.paper",
                   borderRadius: 50,
                   px: 3,
-                  "&:hover": { bgcolor: "text.secondary" },
+                  "&:hover": {
+                    bgcolor: isSubscribed
+                      ? "action.selected"
+                      : "text.secondary",
+                  },
                 }}
               >
-                登録
+                {isSubscribed ? "登録済み" : "登録"}
               </Button>
             )}
           </Box>
