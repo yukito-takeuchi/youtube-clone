@@ -101,7 +101,7 @@ func main() {
 	profileService := service.NewProfileService(profileRepo, fileStorage)
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
 	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
-	subscriptionService := service.NewSubscriptionService(subscriptionRepo, userRepo)
+	subscriptionService := service.NewSubscriptionService(subscriptionRepo, userRepo, videoRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)

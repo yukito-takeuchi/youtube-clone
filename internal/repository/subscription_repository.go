@@ -125,7 +125,7 @@ func (r *SubscriptionRepository) GetSubscribedChannels(ctx context.Context, subs
 func (r *SubscriptionRepository) GetSubscriptionFeed(ctx context.Context, subscriberUserID int64, limit, offset int) ([]*model.VideoWithProfile, error) {
 	query := `
 		SELECT
-			v.id, v.user_id, v.title, v.description, v.video_url, v.thumbnail_url, v.view_count, v.created_at, v.updated_at,
+			v.id, v.user_id, v.title, v.description, v.video_url, v.thumbnail_url, v.duration, v.view_count, v.created_at, v.updated_at,
 			p.id, p.user_id, p.channel_name, p.description, p.icon_url, p.banner_url, p.created_at, p.updated_at
 		FROM videos v
 		INNER JOIN subscriptions s ON v.user_id = s.subscribed_to_user_id
@@ -153,6 +153,7 @@ func (r *SubscriptionRepository) GetSubscriptionFeed(ctx context.Context, subscr
 			&video.Description,
 			&video.VideoURL,
 			&video.ThumbnailURL,
+			&video.Duration,
 			&video.ViewCount,
 			&video.CreatedAt,
 			&video.UpdatedAt,

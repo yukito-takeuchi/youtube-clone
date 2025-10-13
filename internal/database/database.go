@@ -53,6 +53,7 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 			description TEXT,
 			video_url VARCHAR(500),
 			thumbnail_url VARCHAR(500),
+			duration BIGINT NOT NULL DEFAULT 0,
 			view_count BIGINT NOT NULL DEFAULT 0,
 			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 			updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -60,6 +61,22 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 	`)
 	if err != nil {
 		return fmt.Errorf("failed to create videos table: %w", err)
+	}
+
+	// Add duration column if it doesn't exist (migration for existing tables)
+	_, err = db.Pool.Exec(ctx, `
+		DO $$
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM information_schema.columns
+				WHERE table_name='videos' AND column_name='duration'
+			) THEN
+				ALTER TABLE videos ADD COLUMN duration BIGINT NOT NULL DEFAULT 0;
+			END IF;
+		END $$;
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to add duration column: %w", err)
 	}
 
 	// Create index on user_id for videos

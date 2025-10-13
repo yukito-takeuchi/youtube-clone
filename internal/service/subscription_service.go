@@ -12,12 +12,14 @@ import (
 type SubscriptionService struct {
 	subscriptionRepo *repository.SubscriptionRepository
 	userRepo         *repository.UserRepository
+	videoRepo        *repository.VideoRepository
 }
 
-func NewSubscriptionService(subscriptionRepo *repository.SubscriptionRepository, userRepo *repository.UserRepository) *SubscriptionService {
+func NewSubscriptionService(subscriptionRepo *repository.SubscriptionRepository, userRepo *repository.UserRepository, videoRepo *repository.VideoRepository) *SubscriptionService {
 	return &SubscriptionService{
 		subscriptionRepo: subscriptionRepo,
 		userRepo:         userRepo,
+		videoRepo:        videoRepo,
 	}
 }
 
@@ -91,5 +93,15 @@ func (s *SubscriptionService) GetSubscriptionFeed(ctx context.Context, subscribe
 	if err != nil {
 		return nil, fmt.Errorf("failed to get subscription feed: %w", err)
 	}
+
+	// Add like count for each video
+	for _, video := range videos {
+		likeCount, err := s.videoRepo.GetLikeCount(ctx, video.ID)
+		if err != nil {
+			likeCount = 0
+		}
+		video.LikeCount = likeCount
+	}
+
 	return videos, nil
 }
