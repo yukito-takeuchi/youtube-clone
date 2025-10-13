@@ -43,7 +43,7 @@ func (s *VideoService) Create(ctx context.Context, userID int64, req *model.Crea
 	return createdVideo, nil
 }
 
-func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title, description string, videoFile io.Reader, videoFilename, videoContentType string, videoSize int64, thumbnailFile io.Reader, thumbnailFilename, thumbnailContentType string, thumbnailSize int64) (*model.Video, error) {
+func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title, description string, duration int64, videoFile io.Reader, videoFilename, videoContentType string, videoSize int64, thumbnailFile io.Reader, thumbnailFilename, thumbnailContentType string, thumbnailSize int64) (*model.Video, error) {
 	var videoURL, thumbnailURL string
 	var err error
 
@@ -73,6 +73,7 @@ func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title,
 		Description:  description,
 		VideoURL:     videoURL,
 		ThumbnailURL: thumbnailURL,
+		Duration:     duration,
 		ViewCount:    0,
 	}
 
