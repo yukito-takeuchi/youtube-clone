@@ -45,8 +45,9 @@ func (s *AuthService) Register(ctx context.Context, req *model.RegisterRequest) 
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	// Create profile for the new user
-	_, err = s.profileRepo.Create(ctx, user.ID, req.Email, s.defaultIconURL, s.defaultBannerURL)
+	// Create profile for the new user with empty icon/banner URLs
+	// Default images will be handled by the frontend
+	_, err = s.profileRepo.Create(ctx, user.ID, req.Email, "", "")
 	if err != nil {
 		// If profile creation fails, we still return the user
 		// Profile can be created later
