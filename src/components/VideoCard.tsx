@@ -143,52 +143,59 @@ export default function VideoCard({ video }: VideoCardProps) {
       >
         {/* Thumbnail */}
         <Link href={`/videos/${video.id}`} style={{ textDecoration: 'none' }}>
-          <CardMedia
-            component="div"
-            className="thumbnail"
-            sx={{
-              paddingTop: '56.25%', // 16:9 aspect ratio
-              borderRadius: 2,
-              bgcolor: 'grey.300',
-              backgroundImage: video.thumbnail_url ? `url(${video.thumbnail_url})` : 'none',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              transition: 'opacity 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              position: 'relative',
-              '&:hover': {
-                opacity: 0.9,
-              },
-            }}
-          >
+          <Box sx={{ position: 'relative' }}>
+            <CardMedia
+              component="div"
+              className="thumbnail"
+              sx={{
+                paddingTop: '56.25%', // 16:9 aspect ratio
+                borderRadius: 2,
+                bgcolor: 'grey.300',
+                backgroundImage: video.thumbnail_url ? `url(${video.thumbnail_url})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transition: 'opacity 0.2s',
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.9,
+                },
+              }}
+            />
             {!video.thumbnail_url && (
-              <Typography variant="body2" color="text.secondary" sx={{ position: 'absolute' }}>
-                No Thumbnail
-              </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  No Thumbnail
+                </Typography>
+              </Box>
             )}
             {/* Duration overlay */}
             {video.duration && video.duration > 0 && (
               <Box
                 sx={{
                   position: 'absolute',
-                  bottom: 4,
-                  right: 4,
-                  bgcolor: 'rgba(0, 0, 0, 0.8)',
+                  bottom: 8,
+                  right: 8,
+                  bgcolor: 'rgba(0, 0, 0, 0.9)',
                   color: 'white',
-                  px: 0.5,
+                  px: 0.75,
                   py: 0.25,
                   borderRadius: 0.5,
                   fontSize: '0.75rem',
-                  fontWeight: 500,
+                  fontWeight: 600,
+                  lineHeight: 1,
                 }}
               >
                 {formatDuration(video.duration)}
               </Box>
             )}
-          </CardMedia>
+          </Box>
         </Link>
 
         {/* Info */}

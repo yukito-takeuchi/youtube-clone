@@ -271,16 +271,21 @@ export default function VideoDetailPage() {
 
   // Like state
   const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   // Subscription state
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(0);
+
+  // Description collapse state
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
       try {
         const data = await api.getVideo(Number(params.id));
         setVideo(data);
+        setLikeCount(data.like_count || 0);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "動画の読み込みに失敗しました"
@@ -349,9 +354,11 @@ export default function VideoDetailPage() {
       if (isLiked) {
         await api.unlikeVideo(video.id);
         setIsLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
       } else {
         await api.likeVideo(video.id);
         setIsLiked(true);
+        setLikeCount((prev) => prev + 1);
       }
     } catch (err) {
       console.error("Failed to toggle like:", err);
@@ -503,7 +510,7 @@ export default function VideoDetailPage() {
                       color: isLiked ? "primary.main" : "inherit",
                     }}
                   >
-                    {video.like_count || 0}
+                    {likeCount}
                   </Typography>
                 </IconButton>
                 <Divider orientation="vertical" flexItem />
@@ -534,7 +541,19 @@ export default function VideoDetailPage() {
           </Box>
 
           {/* View Count and Date + Description */}
-          <Box sx={{ bgcolor: "action.hover", borderRadius: 2, p: 2, mt: 2 }}>
+          <Box
+            sx={{
+              bgcolor: "action.hover",
+              borderRadius: 2,
+              p: 2,
+              mt: 2,
+              cursor: showFullDescription ? "default" : "pointer",
+              "&:hover": showFullDescription ? {} : {
+                bgcolor: "action.selected"
+              }
+            }}
+            onClick={() => !showFullDescription && setShowFullDescription(true)}
+          >
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, mb: 1 }}
@@ -546,9 +565,42 @@ export default function VideoDetailPage() {
                 day: "numeric",
               })}
             </Typography>
-            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+            <Typography
+              variant="body2"
+              sx={{
+                whiteSpace: "pre-wrap",
+                display: showFullDescription ? "block" : "-webkit-box",
+                WebkitLineClamp: showFullDescription ? "unset" : 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                wordBreak: "break-word"
+              }}
+            >
               {video.description || "説明はありません"}
             </Typography>
+            {showFullDescription && (
+              <Button
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowFullDescription(false);
+                }}
+                sx={{
+                  mt: 1,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  color: "text.primary",
+                  p: 0,
+                  minWidth: "auto",
+                  "&:hover": {
+                    bgcolor: "transparent",
+                    textDecoration: "underline"
+                  }
+                }}
+              >
+                簡潔に表示
+              </Button>
+            )}
           </Box>
 
           {/* Comments Section */}
