@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Link from 'next/link';
+import { getIconUrl } from '@/lib/defaults';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -143,7 +144,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               </IconButton>
               <IconButton color="inherit" onClick={handleProfileMenuOpen}>
                 <Avatar
-                  src={profile?.icon_url}
+                  src={getIconUrl(profile?.icon_url)}
                   sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '1rem' }}
                 >
                   {profile?.channel_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}

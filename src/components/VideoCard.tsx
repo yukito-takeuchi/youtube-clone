@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import PlaylistDialog from './PlaylistDialog';
 import { api } from '@/lib/api';
+import { getIconUrl } from '@/lib/defaults';
 
 interface VideoCardProps {
   video: Video;
@@ -204,7 +205,7 @@ export default function VideoCard({ video }: VideoCardProps) {
             {/* Channel Avatar - Clickable */}
             <Link href={`/profile/${video.user_id}`} style={{ textDecoration: 'none' }}>
               <Avatar
-                src={video.profile?.icon_url}
+                src={getIconUrl(video.profile?.icon_url)}
                 sx={{
                   width: 36,
                   height: 36,

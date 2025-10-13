@@ -18,6 +18,7 @@ import Cropper, { Area } from 'react-easy-crop';
 import { Profile } from '@/types';
 import { api } from '@/lib/api';
 import { getCroppedImg, readFile } from '@/lib/cropImage';
+import { getIconUrl, getBannerUrl } from '@/lib/defaults';
 
 interface ChannelCustomizeDialogProps {
   open: boolean;
@@ -240,22 +241,16 @@ export default function ChannelCustomizeDialog({
                 bgcolor: 'grey.200',
               }}
             >
-              {iconPreview || profile.icon_url ? (
-                <Box
-                  component="img"
-                  src={iconPreview || profile.icon_url}
-                  alt="アイコンプレビュー"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-              ) : (
-                <Typography variant="h3" color="text.secondary">
-                  {profile.channel_name?.[0]?.toUpperCase() || 'U'}
-                </Typography>
-              )}
+              <Box
+                component="img"
+                src={iconPreview || getIconUrl(profile.icon_url)}
+                alt="アイコンプレビュー"
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
             </Box>
           </Box>
 
@@ -290,38 +285,19 @@ export default function ChannelCustomizeDialog({
                 bgcolor: 'grey.200',
               }}
             >
-              {bannerPreview || profile.banner_url ? (
-                <Box
-                  component="img"
-                  src={bannerPreview || profile.banner_url}
-                  alt="バナープレビュー"
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    バナー画像なし
-                  </Typography>
-                </Box>
-              )}
+              <Box
+                component="img"
+                src={bannerPreview || getBannerUrl(profile.banner_url)}
+                alt="バナープレビュー"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
             </Box>
           </Box>
         </DialogContent>

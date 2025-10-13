@@ -27,6 +27,7 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import PlaylistDialog from "@/components/PlaylistDialog";
+import { getIconUrl } from "@/lib/defaults";
 
 // Dummy related videos
 const dummyRelatedVideos: Video[] = [
@@ -45,6 +46,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 10,
       channel_name: "React Tips",
       icon_url: "https://picsum.photos/seed/channel1/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -64,6 +67,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 11,
       channel_name: "TypeScript Pro",
       icon_url: "https://picsum.photos/seed/channel2/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -83,6 +88,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 12,
       channel_name: "Next.js Master",
       icon_url: "https://picsum.photos/seed/channel3/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -102,6 +109,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 13,
       channel_name: "UI Design",
       icon_url: "https://picsum.photos/seed/channel4/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -121,6 +130,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 14,
       channel_name: "Web Dev Pro",
       icon_url: "https://picsum.photos/seed/channel5/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -140,6 +151,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 15,
       channel_name: "JS Performance",
       icon_url: "https://picsum.photos/seed/channel6/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -159,6 +172,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 16,
       channel_name: "API Design",
       icon_url: "https://picsum.photos/seed/channel7/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -178,6 +193,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 17,
       channel_name: "DevOps Guide",
       icon_url: "https://picsum.photos/seed/channel8/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -197,6 +214,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 18,
       channel_name: "Git Master",
       icon_url: "https://picsum.photos/seed/channel9/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -216,6 +235,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 19,
       channel_name: "CSS Expert",
       icon_url: "https://picsum.photos/seed/channel10/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -235,6 +256,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 20,
       channel_name: "A11y Guide",
       icon_url: "https://picsum.photos/seed/channel11/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -254,6 +277,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 21,
       channel_name: "Modern JS",
       icon_url: "https://picsum.photos/seed/channel12/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -431,7 +456,7 @@ export default function VideoDetailPage() {
                 }}
               >
                 <Avatar
-                  src={video.profile?.icon_url}
+                  src={getIconUrl(video.profile?.icon_url)}
                   sx={{
                     width: 40,
                     height: 40,
