@@ -58,10 +58,20 @@ func (h *VideoHandler) CreateWithFiles(c *gin.Context) {
 	// Get form values
 	title := c.PostForm("title")
 	description := c.PostForm("description")
+	durationStr := c.PostForm("duration")
 
 	if title == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required"})
 		return
+	}
+
+	// Parse duration (default to 0 if not provided or invalid)
+	var duration int64 = 0
+	if durationStr != "" {
+		parsedDuration, err := strconv.ParseInt(durationStr, 10, 64)
+		if err == nil {
+			duration = parsedDuration
+		}
 	}
 
 	// Get video file
@@ -102,6 +112,7 @@ func (h *VideoHandler) CreateWithFiles(c *gin.Context) {
 		userID.(int64),
 		title,
 		description,
+		duration,
 		videoFile,
 		videoFileHeader.Filename,
 		videoFileHeader.Header.Get("Content-Type"),

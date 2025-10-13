@@ -43,7 +43,7 @@ func (s *VideoService) Create(ctx context.Context, userID int64, req *model.Crea
 	return createdVideo, nil
 }
 
-func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title, description string, videoFile io.Reader, videoFilename, videoContentType string, videoSize int64, thumbnailFile io.Reader, thumbnailFilename, thumbnailContentType string, thumbnailSize int64) (*model.Video, error) {
+func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title, description string, duration int64, videoFile io.Reader, videoFilename, videoContentType string, videoSize int64, thumbnailFile io.Reader, thumbnailFilename, thumbnailContentType string, thumbnailSize int64) (*model.Video, error) {
 	var videoURL, thumbnailURL string
 	var err error
 
@@ -73,6 +73,7 @@ func (s *VideoService) CreateWithFiles(ctx context.Context, userID int64, title,
 		Description:  description,
 		VideoURL:     videoURL,
 		ThumbnailURL: thumbnailURL,
+		Duration:     duration,
 		ViewCount:    0,
 	}
 
@@ -104,6 +105,12 @@ func (s *VideoService) GetByID(ctx context.Context, id int64) (*model.VideoWithP
 		profile = nil
 	}
 
+	// Get like count
+	likeCount, err := s.videoRepo.GetLikeCount(ctx, id)
+	if err != nil {
+		likeCount = 0
+	}
+
 	// Increment view count
 	_ = s.videoRepo.IncrementViewCount(ctx, id)
 
@@ -114,7 +121,9 @@ func (s *VideoService) GetByID(ctx context.Context, id int64) (*model.VideoWithP
 		Description:  video.Description,
 		VideoURL:     video.VideoURL,
 		ThumbnailURL: video.ThumbnailURL,
+		Duration:     video.Duration,
 		ViewCount:    video.ViewCount,
+		LikeCount:    likeCount,
 		CreatedAt:    video.CreatedAt,
 		UpdatedAt:    video.UpdatedAt,
 		Profile:      profile,
@@ -129,12 +138,17 @@ func (s *VideoService) List(ctx context.Context) ([]*model.VideoWithProfile, err
 		return nil, fmt.Errorf("failed to find videos: %w", err)
 	}
 
-	// Get profiles for all videos
+	// Get profiles and like counts for all videos
 	videosWithProfile := make([]*model.VideoWithProfile, len(videos))
 	for i, video := range videos {
 		profile, err := s.profileRepo.FindByUserID(ctx, video.UserID)
 		if err != nil {
 			profile = nil
+		}
+
+		likeCount, err := s.videoRepo.GetLikeCount(ctx, video.ID)
+		if err != nil {
+			likeCount = 0
 		}
 
 		videosWithProfile[i] = &model.VideoWithProfile{
@@ -144,7 +158,9 @@ func (s *VideoService) List(ctx context.Context) ([]*model.VideoWithProfile, err
 			Description:  video.Description,
 			VideoURL:     video.VideoURL,
 			ThumbnailURL: video.ThumbnailURL,
+			Duration:     video.Duration,
 			ViewCount:    video.ViewCount,
+			LikeCount:    likeCount,
 			CreatedAt:    video.CreatedAt,
 			UpdatedAt:    video.UpdatedAt,
 			Profile:      profile,

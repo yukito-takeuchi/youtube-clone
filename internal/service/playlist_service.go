@@ -185,3 +185,75 @@ func (s *PlaylistService) GetPlaylistsContainingVideo(ctx context.Context, userI
 
 	return playlistIDs, nil
 }
+
+// LikeVideo adds a video to the user's liked videos playlist
+func (s *PlaylistService) LikeVideo(ctx context.Context, userID, videoID int64) error {
+	// Find the liked videos playlist
+	likedPlaylist, err := s.playlistRepo.FindLikedPlaylistByUserID(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("liked playlist not found: %w", err)
+	}
+
+	// Check if video exists
+	_, err = s.videoRepo.FindByID(ctx, videoID)
+	if err != nil {
+		return fmt.Errorf("video not found: %w", err)
+	}
+
+	// Add video to liked playlist
+	if err := s.playlistRepo.AddVideo(ctx, likedPlaylist.ID, videoID); err != nil {
+		return fmt.Errorf("failed to like video: %w", err)
+	}
+
+	return nil
+}
+
+// UnlikeVideo removes a video from the user's liked videos playlist
+func (s *PlaylistService) UnlikeVideo(ctx context.Context, userID, videoID int64) error {
+	// Find the liked videos playlist
+	likedPlaylist, err := s.playlistRepo.FindLikedPlaylistByUserID(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("liked playlist not found: %w", err)
+	}
+
+	// Remove video from liked playlist
+	if err := s.playlistRepo.RemoveVideo(ctx, likedPlaylist.ID, videoID); err != nil {
+		return fmt.Errorf("failed to unlike video: %w", err)
+	}
+
+	return nil
+}
+
+// IsVideoLiked checks if a video is in the user's liked videos playlist
+func (s *PlaylistService) IsVideoLiked(ctx context.Context, userID, videoID int64) (bool, error) {
+	// Find the liked videos playlist
+	likedPlaylist, err := s.playlistRepo.FindLikedPlaylistByUserID(ctx, userID)
+	if err != nil {
+		return false, fmt.Errorf("liked playlist not found: %w", err)
+	}
+
+	// Check if video is in the playlist
+	isLiked, err := s.playlistRepo.IsVideoInPlaylist(ctx, likedPlaylist.ID, videoID)
+	if err != nil {
+		return false, fmt.Errorf("failed to check like status: %w", err)
+	}
+
+	return isLiked, nil
+}
+
+// GetLikedVideos returns all videos in the user's liked videos playlist
+func (s *PlaylistService) GetLikedVideos(ctx context.Context, userID int64) ([]*model.PlaylistVideo, error) {
+	// Find the liked videos playlist
+	likedPlaylist, err := s.playlistRepo.FindLikedPlaylistByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("liked playlist not found: %w", err)
+	}
+
+	// Get all videos from the playlist
+	videos, err := s.playlistRepo.GetPlaylistVideos(ctx, likedPlaylist.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get liked videos: %w", err)
+	}
+
+	return videos, nil
+}

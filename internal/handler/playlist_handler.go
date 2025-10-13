@@ -211,3 +211,87 @@ func (h *PlaylistHandler) GetPlaylistsContainingVideo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"playlist_ids": playlistIDs})
 }
+
+// LikeVideo handles POST /api/videos/:id/like
+func (h *PlaylistHandler) LikeVideo(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	videoID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid video ID"})
+		return
+	}
+
+	if err := h.playlistService.LikeVideo(c.Request.Context(), userID.(int64), videoID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "video liked successfully"})
+}
+
+// UnlikeVideo handles DELETE /api/videos/:id/like
+func (h *PlaylistHandler) UnlikeVideo(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	videoID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid video ID"})
+		return
+	}
+
+	if err := h.playlistService.UnlikeVideo(c.Request.Context(), userID.(int64), videoID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "video unliked successfully"})
+}
+
+// GetLikeStatus handles GET /api/videos/:id/like-status
+func (h *PlaylistHandler) GetLikeStatus(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	videoID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid video ID"})
+		return
+	}
+
+	isLiked, err := h.playlistService.IsVideoLiked(c.Request.Context(), userID.(int64), videoID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"is_liked": isLiked})
+}
+
+// GetLikedVideos handles GET /api/videos/liked
+func (h *PlaylistHandler) GetLikedVideos(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+		return
+	}
+
+	videos, err := h.playlistService.GetLikedVideos(c.Request.Context(), userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, videos)
+}

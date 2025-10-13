@@ -30,6 +30,16 @@ func main() {
 		port = "8080"
 	}
 
+	// Default profile images
+	defaultIconURL := os.Getenv("DEFAULT_ICON_URL")
+	if defaultIconURL == "" {
+		defaultIconURL = "" // Empty string means no default icon
+	}
+	defaultBannerURL := os.Getenv("DEFAULT_BANNER_URL")
+	if defaultBannerURL == "" {
+		defaultBannerURL = "" // Empty string means no default banner
+	}
+
 	// Storage configuration
 	storageType := os.Getenv("STORAGE_TYPE") // "minio" or "gcs"
 	if storageType == "" {
@@ -84,18 +94,21 @@ func main() {
 	profileRepo := repository.NewProfileRepository(db)
 	videoRepo := repository.NewVideoRepository(db)
 	playlistRepo := repository.NewPlaylistRepository(db)
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
 
 	// Initialize services with the storage interface
-	authService := service.NewAuthService(userRepo, profileRepo, jwtSecret)
+	authService := service.NewAuthService(userRepo, profileRepo, playlistRepo, jwtSecret, defaultIconURL, defaultBannerURL)
 	profileService := service.NewProfileService(profileRepo, fileStorage)
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
 	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
+	subscriptionService := service.NewSubscriptionService(subscriptionRepo, userRepo, videoRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
 	profileHandler := handler.NewProfileHandler(profileService)
 	videoHandler := handler.NewVideoHandler(videoService)
 	playlistHandler := handler.NewPlaylistHandler(playlistService)
+	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtSecret)
@@ -153,6 +166,7 @@ func main() {
 		// Video routes
 		videos := api.Group("/videos")
 		{
+			// Public routes
 			videos.GET("", videoHandler.List)
 			videos.GET("/:id", videoHandler.GetByID)
 
@@ -161,6 +175,12 @@ func main() {
 			videos.POST("", videoHandler.Create)
 			videos.PUT("/:id", videoHandler.Update)
 			videos.DELETE("/:id", videoHandler.Delete)
+
+			// Like routes
+			videos.POST("/:id/like", playlistHandler.LikeVideo)
+			videos.DELETE("/:id/like", playlistHandler.UnlikeVideo)
+			videos.GET("/:id/like", playlistHandler.GetLikeStatus)
+			videos.GET("/liked", playlistHandler.GetLikedVideos)
 		}
 
 		// Playlist routes
@@ -179,6 +199,33 @@ func main() {
 			playlists.POST("/:id/videos", playlistHandler.AddVideo)
 			playlists.DELETE("/:id/videos/:videoId", playlistHandler.RemoveVideo)
 			playlists.GET("/check/:videoId", playlistHandler.GetPlaylistsContainingVideo)
+		}
+
+		// Subscription routes
+		users := api.Group("/users")
+		{
+			// Public route for subscriber count
+			users.GET("/:id/subscriber-count", subscriptionHandler.GetSubscriberCount)
+
+			// Protected routes
+			users.Use(authMiddleware.RequireAuth())
+			users.POST("/:id/subscription", subscriptionHandler.Subscribe)
+			users.DELETE("/:id/subscription", subscriptionHandler.Unsubscribe)
+			users.GET("/:id/subscription", subscriptionHandler.GetSubscriptionStatus)
+		}
+
+		// Subscription management routes
+		subscriptions := api.Group("/subscriptions")
+		{
+			subscriptions.Use(authMiddleware.RequireAuth())
+			subscriptions.GET("", subscriptionHandler.GetSubscribedChannels)
+		}
+
+		// Feed routes
+		feed := api.Group("/feed")
+		{
+			feed.Use(authMiddleware.RequireAuth())
+			feed.GET("/subscriptions", subscriptionHandler.GetSubscriptionFeed)
 		}
 	}
 
