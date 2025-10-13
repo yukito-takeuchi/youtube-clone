@@ -13,18 +13,22 @@ import (
 )
 
 type AuthService struct {
-	userRepo     *repository.UserRepository
-	profileRepo  *repository.ProfileRepository
-	playlistRepo *repository.PlaylistRepository
-	jwtSecret    string
+	userRepo         *repository.UserRepository
+	profileRepo      *repository.ProfileRepository
+	playlistRepo     *repository.PlaylistRepository
+	jwtSecret        string
+	defaultIconURL   string
+	defaultBannerURL string
 }
 
-func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, playlistRepo *repository.PlaylistRepository, jwtSecret string) *AuthService {
+func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, playlistRepo *repository.PlaylistRepository, jwtSecret, defaultIconURL, defaultBannerURL string) *AuthService {
 	return &AuthService{
-		userRepo:     userRepo,
-		profileRepo:  profileRepo,
-		playlistRepo: playlistRepo,
-		jwtSecret:    jwtSecret,
+		userRepo:         userRepo,
+		profileRepo:      profileRepo,
+		playlistRepo:     playlistRepo,
+		jwtSecret:        jwtSecret,
+		defaultIconURL:   defaultIconURL,
+		defaultBannerURL: defaultBannerURL,
 	}
 }
 
@@ -42,7 +46,7 @@ func (s *AuthService) Register(ctx context.Context, req *model.RegisterRequest) 
 	}
 
 	// Create profile for the new user
-	_, err = s.profileRepo.Create(ctx, user.ID)
+	_, err = s.profileRepo.Create(ctx, user.ID, req.Email, s.defaultIconURL, s.defaultBannerURL)
 	if err != nil {
 		// If profile creation fails, we still return the user
 		// Profile can be created later
@@ -61,6 +65,20 @@ func (s *AuthService) Register(ctx context.Context, req *model.RegisterRequest) 
 		// If playlist creation fails, we still return the user
 		// Playlist can be created later
 		fmt.Printf("Warning: failed to create liked playlist for user %d: %v\n", user.ID, err)
+	}
+
+	// Create default "Watch Later" playlist
+	watchLaterPlaylist := &model.Playlist{
+		UserID:      user.ID,
+		Title:       "あとで見る",
+		Description: "後で見たい動画を保存します",
+		Visibility:  "private",
+	}
+	_, err = s.playlistRepo.Create(ctx, watchLaterPlaylist)
+	if err != nil {
+		// If playlist creation fails, we still return the user
+		// Playlist can be created later
+		fmt.Printf("Warning: failed to create watch later playlist for user %d: %v\n", user.ID, err)
 	}
 
 	// Generate token

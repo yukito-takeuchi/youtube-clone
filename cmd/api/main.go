@@ -30,6 +30,16 @@ func main() {
 		port = "8080"
 	}
 
+	// Default profile images
+	defaultIconURL := os.Getenv("DEFAULT_ICON_URL")
+	if defaultIconURL == "" {
+		defaultIconURL = "" // Empty string means no default icon
+	}
+	defaultBannerURL := os.Getenv("DEFAULT_BANNER_URL")
+	if defaultBannerURL == "" {
+		defaultBannerURL = "" // Empty string means no default banner
+	}
+
 	// Storage configuration
 	storageType := os.Getenv("STORAGE_TYPE") // "minio" or "gcs"
 	if storageType == "" {
@@ -87,7 +97,7 @@ func main() {
 	subscriptionRepo := repository.NewSubscriptionRepository(db)
 
 	// Initialize services with the storage interface
-	authService := service.NewAuthService(userRepo, profileRepo, playlistRepo, jwtSecret)
+	authService := service.NewAuthService(userRepo, profileRepo, playlistRepo, jwtSecret, defaultIconURL, defaultBannerURL)
 	profileService := service.NewProfileService(profileRepo, fileStorage)
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
 	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
