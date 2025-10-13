@@ -43,7 +43,7 @@ function TabPanel(props: TabPanelProps) {
 export default function ProfileDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +51,10 @@ export default function ProfileDetailPage() {
   const [tabValue, setTabValue] = useState(0);
   const [customizeDialogOpen, setCustomizeDialogOpen] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // Subscription state
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState(0);
 
   const userId = Number(params.id);
   const isOwnChannel = user?.id === userId;
@@ -65,6 +69,16 @@ export default function ProfileDetailPage() {
         const allVideos = await api.getVideos();
         const userVideos = allVideos.filter((v) => v.user_id === userId);
         setVideos(userVideos);
+
+        // Get subscriber count
+        const subCount = await api.getSubscriberCount(userId);
+        setSubscriberCount(subCount);
+
+        // Get subscription status if authenticated
+        if (isAuthenticated && !isOwnChannel) {
+          const subStatus = await api.getSubscriptionStatus(userId);
+          setIsSubscribed(subStatus);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'プロフィールの読み込みに失敗しました');
       } finally {
@@ -75,10 +89,31 @@ export default function ProfileDetailPage() {
     if (params.id) {
       fetchData();
     }
-  }, [params.id, userId]);
+  }, [params.id, userId, isAuthenticated, isOwnChannel]);
 
   const handleProfileUpdate = (updatedProfile: Profile) => {
     setProfile(updatedProfile);
+  };
+
+  const handleSubscribe = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      if (isSubscribed) {
+        await api.unsubscribeFromChannel(userId);
+        setIsSubscribed(false);
+        setSubscriberCount((prev) => prev - 1);
+      } else {
+        await api.subscribeToChannel(userId);
+        setIsSubscribed(true);
+        setSubscriberCount((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error('Failed to toggle subscription:', err);
+    }
   };
 
   if (loading) {
@@ -122,7 +157,7 @@ export default function ProfileDetailPage() {
                 {profile.channel_name}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                登録者 0人 • 動画 {videos.length}本
+                登録者 {subscriberCount.toLocaleString()}人 • 動画 {videos.length}本
               </Typography>
               {profile.description && (
                 <Box sx={{ mt: 1 }}>
@@ -183,13 +218,16 @@ export default function ProfileDetailPage() {
             ) : (
               <Button
                 variant="contained"
+                onClick={handleSubscribe}
                 sx={{
-                  bgcolor: 'text.primary',
-                  color: 'background.paper',
-                  '&:hover': { bgcolor: 'text.secondary' },
+                  bgcolor: isSubscribed ? 'action.hover' : 'text.primary',
+                  color: isSubscribed ? 'text.primary' : 'background.paper',
+                  '&:hover': {
+                    bgcolor: isSubscribed ? 'action.selected' : 'text.secondary',
+                  },
                 }}
               >
-                登録
+                {isSubscribed ? '登録済み' : '登録'}
               </Button>
             )}
           </Box>
@@ -244,7 +282,7 @@ export default function ProfileDetailPage() {
             統計情報
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            登録者数: 0人
+            登録者数: {subscriberCount.toLocaleString()}人
           </Typography>
           <Typography variant="body2" color="text.secondary">
             動画数: {videos.length}本

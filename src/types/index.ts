@@ -23,7 +23,9 @@ export interface Video {
   description: string;
   video_url: string;
   thumbnail_url: string;
+  duration?: number; // Duration in seconds
   view_count: number;
+  like_count?: number; // Total number of likes
   created_at: string;
   updated_at: string;
   profile?: Profile;

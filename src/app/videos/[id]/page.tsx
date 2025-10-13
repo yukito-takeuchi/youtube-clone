@@ -398,11 +398,11 @@ export default function VideoDetailPage() {
           <VideoPlayer videoUrl={video.video_url} title={video.title} />
 
           {/* Video Title */}
-          <Typography variant="h5" sx={{ mt: 2, mb: 1, fontWeight: 600 }}>
+          <Typography variant="h5" sx={{ mt: 2, mb: 2, fontWeight: 600 }}>
             {video.title}
           </Typography>
 
-          {/* Actions Bar */}
+          {/* Channel Info and Actions Bar */}
           <Box
             sx={{
               display: "flex",
@@ -411,15 +411,71 @@ export default function VideoDetailPage() {
               mb: 2,
             }}
           >
-            <Typography variant="body2" color="text.secondary">
-              {video.view_count.toLocaleString()} 回視聴 •{" "}
-              {new Date(video.created_at).toLocaleDateString("ja-JP", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </Typography>
+            {/* Channel Info */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Link
+                href={`/profile/${video.user_id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <Avatar
+                  src={video.profile?.icon_url}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 0.8 },
+                  }}
+                >
+                  {video.profile?.channel_name?.[0]?.toUpperCase() || "U"}
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      "&:hover": { opacity: 0.8 },
+                    }}
+                  >
+                    {video.profile?.channel_name || "チャンネル名"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    登録者数 {subscriberCount.toLocaleString()}人
+                  </Typography>
+                </Box>
+              </Link>
 
+              {!isOwner && (
+                <Button
+                  variant="contained"
+                  onClick={handleSubscribe}
+                  sx={{
+                    bgcolor: isSubscribed ? "action.hover" : "text.primary",
+                    color: isSubscribed
+                      ? "text.primary"
+                      : "background.paper",
+                    borderRadius: 50,
+                    px: 3,
+                    ml: 1,
+                    "&:hover": {
+                      bgcolor: isSubscribed
+                        ? "action.selected"
+                        : "text.secondary",
+                    },
+                  }}
+                >
+                  {isSubscribed ? "登録済み" : "登録"}
+                </Button>
+              )}
+            </Box>
+
+            {/* Actions */}
             <Box sx={{ display: "flex", gap: 1 }}>
               {/* Like/Dislike */}
               <Box
@@ -447,7 +503,7 @@ export default function VideoDetailPage() {
                       color: isLiked ? "primary.main" : "inherit",
                     }}
                   >
-                    {isLiked ? "いいね" : ""}
+                    {video.like_count || 0}
                   </Typography>
                 </IconButton>
                 <Divider orientation="vertical" flexItem />
@@ -477,84 +533,19 @@ export default function VideoDetailPage() {
             </Box>
           </Box>
 
-          <Divider />
-
-          {/* Channel Info */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              py: 2,
-            }}
-          >
-            <Link
-              href={`/profile/${video.user_id}`}
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <Avatar
-                src={video.profile?.icon_url}
-                sx={{
-                  width: 40,
-                  height: 40,
-                  cursor: "pointer",
-                  "&:hover": { opacity: 0.8 },
-                }}
-              >
-                {video.profile?.channel_name?.[0]?.toUpperCase() || "U"}
-              </Avatar>
-              <Box>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 0.8 },
-                  }}
-                >
-                  {video.profile?.channel_name || "チャンネル名"}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  登録者数 {subscriberCount.toLocaleString()}人
-                </Typography>
-              </Box>
-            </Link>
-
-            {!isOwner && (
-              <Button
-                variant="contained"
-                onClick={handleSubscribe}
-                sx={{
-                  bgcolor: isSubscribed
-                    ? "action.hover"
-                    : "text.primary",
-                  color: isSubscribed
-                    ? "text.primary"
-                    : "background.paper",
-                  borderRadius: 50,
-                  px: 3,
-                  "&:hover": {
-                    bgcolor: isSubscribed
-                      ? "action.selected"
-                      : "text.secondary",
-                  },
-                }}
-              >
-                {isSubscribed ? "登録済み" : "登録"}
-              </Button>
-            )}
-          </Box>
-
-          <Divider />
-
-          {/* Description */}
+          {/* View Count and Date + Description */}
           <Box sx={{ bgcolor: "action.hover", borderRadius: 2, p: 2, mt: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, mb: 1 }}
+            >
+              {video.view_count.toLocaleString()} 回視聴 •{" "}
+              {new Date(video.created_at).toLocaleDateString("ja-JP", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </Typography>
             <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
               {video.description || "説明はありません"}
             </Typography>
