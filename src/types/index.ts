@@ -23,7 +23,9 @@ export interface Video {
   description: string;
   video_url: string;
   thumbnail_url: string;
+  duration?: number; // Duration in seconds
   view_count: number;
+  like_count?: number; // Total number of likes
   created_at: string;
   updated_at: string;
   profile?: Profile;
@@ -78,4 +80,15 @@ export interface UpdatePlaylistRequest {
 
 export interface AddVideoToPlaylistRequest {
   video_id: number;
+}
+
+export interface Subscription {
+  id: number;
+  subscriber_user_id: number;
+  subscribed_to_user_id: number;
+  created_at: string;
+}
+
+export interface SubscriptionWithProfile extends Subscription {
+  profile: Profile;
 }

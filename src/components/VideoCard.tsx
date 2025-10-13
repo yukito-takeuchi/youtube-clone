@@ -26,9 +26,52 @@ import {
   Flag as FlagIcon,
 } from '@mui/icons-material';
 import PlaylistDialog from './PlaylistDialog';
+import { api } from '@/lib/api';
 
 interface VideoCardProps {
   video: Video;
+}
+
+// Helper function to format duration (seconds to MM:SS or H:MM:SS)
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Helper function to format relative date
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears}年前`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths}ヶ月前`;
+  } else if (diffWeeks > 0) {
+    return `${diffWeeks}週間前`;
+  } else if (diffDays > 0) {
+    return `${diffDays}日前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}時間前`;
+  } else if (diffMins > 0) {
+    return `${diffMins}分前`;
+  } else {
+    return '数秒前';
+  }
 }
 
 export default function VideoCard({ video }: VideoCardProps) {
@@ -46,9 +89,24 @@ export default function VideoCard({ video }: VideoCardProps) {
     setAnchorEl(null);
   };
 
-  const handleWatchLater = () => {
-    // TODO: Implement watch later functionality
-    console.log('Add to watch later:', video.id);
+  const handleWatchLater = async () => {
+    try {
+      // Get user's playlists
+      const playlists = await api.getUserPlaylists();
+
+      // Find "Watch Later" playlist
+      const watchLaterPlaylist = playlists.find((p) => p.title === 'あとで見る');
+
+      if (watchLaterPlaylist) {
+        // Add video to watch later playlist
+        await api.addVideoToPlaylist(watchLaterPlaylist.id, video.id);
+        console.log('Added to Watch Later');
+      } else {
+        console.error('Watch Later playlist not found');
+      }
+    } catch (err) {
+      console.error('Failed to add to Watch Later:', err);
+    }
     handleMenuClose();
   };
 
@@ -85,32 +143,59 @@ export default function VideoCard({ video }: VideoCardProps) {
       >
         {/* Thumbnail */}
         <Link href={`/videos/${video.id}`} style={{ textDecoration: 'none' }}>
-          <CardMedia
-            component="div"
-            className="thumbnail"
-            sx={{
-              paddingTop: '56.25%', // 16:9 aspect ratio
-              borderRadius: 2,
-              bgcolor: 'grey.300',
-              backgroundImage: video.thumbnail_url ? `url(${video.thumbnail_url})` : 'none',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              transition: 'opacity 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.9,
-              },
-            }}
-          >
+          <Box sx={{ position: 'relative' }}>
+            <CardMedia
+              component="div"
+              className="thumbnail"
+              sx={{
+                paddingTop: '56.25%', // 16:9 aspect ratio
+                borderRadius: 2,
+                bgcolor: 'grey.300',
+                backgroundImage: video.thumbnail_url ? `url(${video.thumbnail_url})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transition: 'opacity 0.2s',
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.9,
+                },
+              }}
+            />
             {!video.thumbnail_url && (
-              <Typography variant="body2" color="text.secondary" sx={{ position: 'absolute' }}>
-                No Thumbnail
-              </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  No Thumbnail
+                </Typography>
+              </Box>
             )}
-          </CardMedia>
+            {/* Duration overlay */}
+            {video.duration && video.duration > 0 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 8,
+                  right: 8,
+                  bgcolor: 'rgba(0, 0, 0, 0.9)',
+                  color: 'white',
+                  px: 0.75,
+                  py: 0.25,
+                  borderRadius: 0.5,
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  lineHeight: 1,
+                }}
+              >
+                {formatDuration(video.duration)}
+              </Box>
+            )}
+          </Box>
         </Link>
 
         {/* Info */}
@@ -189,12 +274,7 @@ export default function VideoCard({ video }: VideoCardProps) {
                 </Typography>
               </Link>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                {video.view_count.toLocaleString()} 回視聴 •{' '}
-                {new Date(video.created_at).toLocaleDateString('ja-JP', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
+                {video.view_count.toLocaleString()} 回視聴 • {getRelativeTime(video.created_at)}
               </Typography>
             </Box>
           </Box>

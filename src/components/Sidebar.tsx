@@ -64,8 +64,8 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
     {
       icon: <SubscriptionsIcon />,
       text: "登録チャンネル",
-      path: "#",
-      disabled: true,
+      path: "/subscriptions",
+      disabled: false,
     },
     {
       icon: <VideoLibraryIcon />,

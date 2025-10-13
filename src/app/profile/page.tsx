@@ -1034,9 +1034,13 @@ export default function MyPage() {
                           py: 0.5,
                           borderRadius: 1,
                           fontSize: "0.75rem",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
                         }}
                       >
-                        {playlist.video_count || 0}本
+                        <PlaylistIcon sx={{ fontSize: 14 }} />
+                        {playlist.video_count || 0}本の動画
                       </Box>
                     </Box>
 

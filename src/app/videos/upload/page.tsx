@@ -25,6 +25,7 @@ export default function VideoUploadPage() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
@@ -44,8 +45,19 @@ export default function VideoUploadPage() {
     if (file) {
       const url = URL.createObjectURL(file);
       setVideoPreview(url);
+
+      // Get video duration
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        const duration = Math.floor(video.duration);
+        setVideoDuration(duration);
+      };
+      video.src = url;
     } else {
       setVideoPreview(null);
+      setVideoDuration(0);
     }
   };
 
@@ -76,6 +88,7 @@ export default function VideoUploadPage() {
       formData.append('title', title);
       formData.append('description', description);
       formData.append('video', videoFile);
+      formData.append('duration', videoDuration.toString());
       if (thumbnailFile) {
         formData.append('thumbnail', thumbnailFile);
       }
