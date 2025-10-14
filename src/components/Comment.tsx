@@ -339,7 +339,7 @@ export default function Comment({
             sx={{ "&:hover": { bgcolor: "action.hover" } }}
           >
             {localUserLikeType === "like" ? (
-              <ThumbUpIcon fontSize="small" />
+              <ThumbUpIcon fontSize="small" sx={{ color: "text.primary" }} />
             ) : (
               <ThumbUpOutlinedIcon fontSize="small" />
             )}
@@ -356,7 +356,7 @@ export default function Comment({
             sx={{ "&:hover": { bgcolor: "action.hover" } }}
           >
             {localUserLikeType === "dislike" ? (
-              <ThumbDownIcon fontSize="small" />
+              <ThumbDownIcon fontSize="small" sx={{ color: "text.primary" }} />
             ) : (
               <ThumbDownOutlinedIcon fontSize="small" />
             )}
