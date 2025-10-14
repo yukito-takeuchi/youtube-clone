@@ -481,12 +481,14 @@ export default function VideoDetailPage() {
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Video Player */}
           <Box sx={{
-            maxWidth: 1280,
-            height: 'calc(100vh - 250px)',
             width: "100%",
+            maxHeight: 'calc(100vh - 200px)',
             '& > div': {
+              width: '100%',
               height: '100%',
-              maxHeight: '100%',
+              '& video': {
+                objectFit: 'contain',
+              }
             }
           }}>
             <VideoPlayer videoUrl={video.video_url} title={video.title} />
@@ -708,7 +710,7 @@ export default function VideoDetailPage() {
         </Box>
 
         {/* Sidebar - Related Videos */}
-        <Box sx={{ width: 420, display: { xs: "none", lg: "block" } }}>
+        <Box sx={{ width: 402, flexShrink: 0, display: { xs: "none", lg: "block" } }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {dummyRelatedVideos.map((relatedVideo) => (
               <Card
