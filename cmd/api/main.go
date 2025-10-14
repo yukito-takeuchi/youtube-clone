@@ -101,7 +101,7 @@ func main() {
 	authService := service.NewAuthService(userRepo, profileRepo, playlistRepo, jwtSecret, defaultIconURL, defaultBannerURL)
 	profileService := service.NewProfileService(profileRepo, fileStorage)
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
-	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
+	playlistService := service.NewPlaylistService(playlistRepo, videoRepo, profileRepo)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo, userRepo, videoRepo)
 	commentService := service.NewCommentService(commentRepo, videoRepo)
 
