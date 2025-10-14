@@ -98,8 +98,8 @@ class ApiClient {
   }
 
   // Videos
-  async getVideos(): Promise<Video[]> {
-    return this.request("/api/videos");
+  async getVideos(limit: number = 15, offset: number = 0): Promise<Video[]> {
+    return this.request(`/api/videos?limit=${limit}&offset=${offset}`);
   }
 
   async getVideo(id: number): Promise<Video> {
