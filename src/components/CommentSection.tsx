@@ -27,9 +27,13 @@ export default function CommentSection({
   const [offset, setOffset] = useState(0);
   const [repliesMap, setRepliesMap] = useState<Record<number, CommentType[]>>({});
   const [loadingRepliesMap, setLoadingRepliesMap] = useState<Record<number, boolean>>({});
+  const [repliesOffsetMap, setRepliesOffsetMap] = useState<Record<number, number>>({});
+  const [repliesHasMoreMap, setRepliesHasMoreMap] = useState<Record<number, boolean>>({});
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const LIMIT = 20;
+  const REPLIES_LIMIT = 20;
+  const MIN_LOADING_TIME = 500; // Minimum time to show loading indicator (ms)
 
   // Load initial comments and comment count
   useEffect(() => {
@@ -73,9 +77,17 @@ export default function CommentSection({
     if (isLoading) return;
 
     setIsLoading(true);
+    const startTime = Date.now();
+
     try {
       const currentOffset = reset ? 0 : offset;
       const newComments = await api.getCommentsByVideoID(videoId, LIMIT, currentOffset);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+      }
 
       if (reset) {
         setComments(newComments);
@@ -93,18 +105,49 @@ export default function CommentSection({
     }
   };
 
-  const loadReplies = async (commentId: number) => {
+  const loadReplies = async (commentId: number, reset: boolean = true) => {
     if (loadingRepliesMap[commentId]) return;
 
     setLoadingRepliesMap((prev) => ({ ...prev, [commentId]: true }));
+    const startTime = Date.now();
+
     try {
-      const replies = await api.getRepliesByParentID(commentId, 100, 0);
-      setRepliesMap((prev) => ({ ...prev, [commentId]: replies }));
+      const currentOffset = reset ? 0 : (repliesOffsetMap[commentId] || 0);
+      const replies = await api.getRepliesByParentID(commentId, REPLIES_LIMIT, currentOffset);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+      }
+
+      if (reset) {
+        setRepliesMap((prev) => ({ ...prev, [commentId]: replies }));
+        setRepliesOffsetMap((prev) => ({ ...prev, [commentId]: REPLIES_LIMIT }));
+      } else {
+        setRepliesMap((prev) => ({
+          ...prev,
+          [commentId]: [...(prev[commentId] || []), ...replies],
+        }));
+        setRepliesOffsetMap((prev) => ({
+          ...prev,
+          [commentId]: (prev[commentId] || 0) + REPLIES_LIMIT,
+        }));
+      }
+
+      setRepliesHasMoreMap((prev) => ({
+        ...prev,
+        [commentId]: replies.length === REPLIES_LIMIT,
+      }));
     } catch (error) {
       console.error('Failed to load replies:', error);
     } finally {
       setLoadingRepliesMap((prev) => ({ ...prev, [commentId]: false }));
     }
+  };
+
+  const loadMoreReplies = async (commentId: number) => {
+    await loadReplies(commentId, false);
   };
 
   const handleCreateComment = async (content: string) => {
@@ -189,8 +232,10 @@ export default function CommentSection({
           onDelete={handleDeleteComment}
           onLikeChange={handleLikeChange}
           onLoadReplies={loadReplies}
+          onLoadMoreReplies={loadMoreReplies}
           replies={repliesMap[comment.id] || []}
           isLoadingReplies={loadingRepliesMap[comment.id] || false}
+          hasMoreReplies={repliesHasMoreMap[comment.id] || false}
         />
       ))}
 

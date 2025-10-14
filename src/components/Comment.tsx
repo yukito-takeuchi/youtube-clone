@@ -35,9 +35,14 @@ interface CommentProps {
   onDelete?: (commentId: number) => Promise<void>;
   onLikeChange?: () => void;
   onLoadReplies?: (commentId: number) => void;
+  onLoadMoreReplies?: (commentId: number) => Promise<void>;
   replies?: CommentType[];
   isLoadingReplies?: boolean;
+  hasMoreReplies?: boolean;
 }
+
+// Minimum time to show loading indicator (ms)
+const MIN_LOADING_TIME = 300;
 
 // Helper function to format relative date
 function getRelativeTime(dateString: string): string {
@@ -78,8 +83,10 @@ export default function Comment({
   onDelete,
   onLikeChange,
   onLoadReplies,
+  onLoadMoreReplies,
   replies = [],
   isLoadingReplies = false,
+  hasMoreReplies = false,
 }: CommentProps) {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -104,6 +111,8 @@ export default function Comment({
     if (!currentUserId || isLiking) return;
 
     setIsLiking(true);
+    const startTime = Date.now();
+
     try {
       if (localUserLikeType === 'like') {
         // Unlike
@@ -121,6 +130,13 @@ export default function Comment({
         setLocalUserLikeType('like');
         setLocalLikeCount((prev) => prev + 1);
       }
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+      }
+
       onLikeChange?.();
     } catch (error) {
       console.error('Failed to like comment:', error);
@@ -133,6 +149,8 @@ export default function Comment({
     if (!currentUserId || isLiking) return;
 
     setIsLiking(true);
+    const startTime = Date.now();
+
     try {
       if (localUserLikeType === 'dislike') {
         // Remove dislike
@@ -148,6 +166,13 @@ export default function Comment({
         await api.likeComment(comment.id, { like_type: 'dislike' });
         setLocalUserLikeType('dislike');
       }
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+      }
+
       onLikeChange?.();
     } catch (error) {
       console.error('Failed to dislike comment:', error);
@@ -393,6 +418,24 @@ export default function Comment({
                 onLikeChange={onLikeChange}
               />
             ))}
+            {/* Load More Replies Button */}
+            {hasMoreReplies && onLoadMoreReplies && (
+              <Box sx={{ mt: 1 }}>
+                <Button
+                  size="small"
+                  onClick={() => onLoadMoreReplies(comment.id)}
+                  disabled={isLoadingReplies}
+                  startIcon={isLoadingReplies ? <CircularProgress size={16} /> : null}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    color: 'primary.main',
+                  }}
+                >
+                  {isLoadingReplies ? '読み込み中...' : 'さらに返信を読み込む'}
+                </Button>
+              </Box>
+            )}
           </Box>
         )}
       </Box>
