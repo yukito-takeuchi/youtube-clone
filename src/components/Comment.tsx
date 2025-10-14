@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Box,
   Typography,
@@ -11,7 +11,7 @@ import {
   Menu,
   MenuItem,
   CircularProgress,
-} from '@mui/material';
+} from "@mui/material";
 import {
   ThumbUp as ThumbUpIcon,
   ThumbUpOutlined as ThumbUpOutlinedIcon,
@@ -20,11 +20,11 @@ import {
   MoreVert as MoreVertIcon,
   PushPin as PushPinIcon,
   Favorite as FavoriteIcon,
-} from '@mui/icons-material';
-import { Comment as CommentType } from '@/types';
-import { api } from '@/lib/api';
-import { getIconUrl } from '@/lib/defaults';
-import CommentInput from './CommentInput';
+} from "@mui/icons-material";
+import { Comment as CommentType } from "@/types";
+import { api } from "@/lib/api";
+import { getIconUrl } from "@/lib/defaults";
+import CommentInput from "./CommentInput";
 
 interface CommentProps {
   comment: CommentType;
@@ -70,7 +70,7 @@ function getRelativeTime(dateString: string): string {
   } else if (diffMins > 0) {
     return `${diffMins}分前`;
   } else {
-    return '数秒前';
+    return "数秒前";
   }
 }
 
@@ -93,7 +93,15 @@ export default function Comment({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isLiking, setIsLiking] = useState(false);
   const [localLikeCount, setLocalLikeCount] = useState(comment.like_count);
-  const [localUserLikeType, setLocalUserLikeType] = useState(comment.user_like_type);
+  const [localUserLikeType, setLocalUserLikeType] = useState(
+    comment.user_like_type
+  );
+
+  // Update local state when comment prop changes (fixes reload issue)
+  useEffect(() => {
+    setLocalLikeCount(comment.like_count);
+    setLocalUserLikeType(comment.user_like_type);
+  }, [comment.like_count, comment.user_like_type]);
 
   const isOwner = currentUserId === comment.user_id;
   const isVideoCreator = currentUserId === videoCreatorId;
@@ -114,32 +122,34 @@ export default function Comment({
     const startTime = Date.now();
 
     try {
-      if (localUserLikeType === 'like') {
+      if (localUserLikeType === "like") {
         // Unlike
         await api.unlikeComment(comment.id);
         setLocalUserLikeType(null);
         setLocalLikeCount((prev) => prev - 1);
-      } else if (localUserLikeType === 'dislike') {
+      } else if (localUserLikeType === "dislike") {
         // Change from dislike to like
-        await api.likeComment(comment.id, { like_type: 'like' });
-        setLocalUserLikeType('like');
+        await api.likeComment(comment.id, { like_type: "like" });
+        setLocalUserLikeType("like");
         setLocalLikeCount((prev) => prev + 1);
       } else {
         // Like
-        await api.likeComment(comment.id, { like_type: 'like' });
-        setLocalUserLikeType('like');
+        await api.likeComment(comment.id, { like_type: "like" });
+        setLocalUserLikeType("like");
         setLocalLikeCount((prev) => prev + 1);
       }
 
       // Ensure minimum loading time for better UX
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < MIN_LOADING_TIME) {
-        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
       }
 
       onLikeChange?.();
     } catch (error) {
-      console.error('Failed to like comment:', error);
+      console.error("Failed to like comment:", error);
     } finally {
       setIsLiking(false);
     }
@@ -152,30 +162,32 @@ export default function Comment({
     const startTime = Date.now();
 
     try {
-      if (localUserLikeType === 'dislike') {
+      if (localUserLikeType === "dislike") {
         // Remove dislike
         await api.unlikeComment(comment.id);
         setLocalUserLikeType(null);
-      } else if (localUserLikeType === 'like') {
+      } else if (localUserLikeType === "like") {
         // Change from like to dislike
-        await api.likeComment(comment.id, { like_type: 'dislike' });
-        setLocalUserLikeType('dislike');
+        await api.likeComment(comment.id, { like_type: "dislike" });
+        setLocalUserLikeType("dislike");
         setLocalLikeCount((prev) => prev - 1);
       } else {
         // Dislike
-        await api.likeComment(comment.id, { like_type: 'dislike' });
-        setLocalUserLikeType('dislike');
+        await api.likeComment(comment.id, { like_type: "dislike" });
+        setLocalUserLikeType("dislike");
       }
 
       // Ensure minimum loading time for better UX
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < MIN_LOADING_TIME) {
-        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
       }
 
       onLikeChange?.();
     } catch (error) {
-      console.error('Failed to dislike comment:', error);
+      console.error("Failed to dislike comment:", error);
     } finally {
       setIsLiking(false);
     }
@@ -200,7 +212,7 @@ export default function Comment({
       await api.pinComment(comment.id, !comment.is_pinned);
       onLikeChange?.(); // Refresh comments
     } catch (error) {
-      console.error('Failed to pin comment:', error);
+      console.error("Failed to pin comment:", error);
     }
     handleMenuClose();
   };
@@ -210,7 +222,7 @@ export default function Comment({
       await api.setCreatorLiked(comment.id, !comment.is_creator_liked);
       onLikeChange?.(); // Refresh comments
     } catch (error) {
-      console.error('Failed to set creator liked:', error);
+      console.error("Failed to set creator liked:", error);
     }
     handleMenuClose();
   };
@@ -225,56 +237,63 @@ export default function Comment({
   return (
     <Box
       sx={{
-        display: 'flex',
+        display: "flex",
         gap: 2,
         py: 2,
-        bgcolor: isCommentByCreator ? 'grey.50' : 'transparent',
-        px: isCommentByCreator ? 2 : 0,
-        borderRadius: isCommentByCreator ? 1 : 0,
       }}
     >
-      <Link href={`/profile/${comment.user_id}`} style={{ textDecoration: 'none' }}>
+      <Link
+        href={`/profile/${comment.user_id}`}
+        style={{ textDecoration: "none" }}
+      >
         <Avatar
           src={getIconUrl(comment.profile?.icon_url)}
           sx={{
             width: 40,
             height: 40,
             flexShrink: 0,
-            cursor: 'pointer',
-            '&:hover': { opacity: 0.8 },
+            cursor: "pointer",
+            "&:hover": { opacity: 0.8 },
           }}
         >
-          {comment.profile?.channel_name?.[0]?.toUpperCase() || 'U'}
+          {comment.profile?.channel_name?.[0]?.toUpperCase() || "U"}
         </Avatar>
       </Link>
 
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
           {comment.is_pinned && (
-            <PushPinIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <PushPinIcon sx={{ fontSize: 16, color: "text.secondary" }} />
           )}
-          <Link href={`/profile/${comment.user_id}`} style={{ textDecoration: 'none' }}>
+          <Link
+            href={`/profile/${comment.user_id}`}
+            style={{ textDecoration: "none" }}
+          >
             <Typography
               variant="body2"
               sx={{
                 fontWeight: 500,
-                color: 'text.primary',
-                cursor: 'pointer',
-                '&:hover': { textDecoration: 'underline' },
+                color: "text.primary",
+                cursor: "pointer",
+                bgcolor: isCommentByCreator ? "grey.200" : "transparent",
+                px: isCommentByCreator ? 0.75 : 0,
+                py: isCommentByCreator ? 0.25 : 0,
+                borderRadius: isCommentByCreator ? 0.5 : 0,
+                "&:hover": { textDecoration: "underline" },
               }}
             >
-              {comment.profile?.channel_name || 'ユーザー'}
+              {comment.profile?.channel_name || "ユーザー"}
             </Typography>
           </Link>
           {isCommentByCreator && (
             <Box
               sx={{
-                bgcolor: 'grey.300',
+                bgcolor: "grey.300",
                 px: 0.75,
                 py: 0.25,
                 borderRadius: 0.5,
-                fontSize: '0.625rem',
+                fontSize: "0.625rem",
                 fontWeight: 600,
               }}
             >
@@ -282,7 +301,15 @@ export default function Comment({
             </Box>
           )}
           {comment.is_creator_liked && (
-            <FavoriteIcon sx={{ fontSize: 14, color: 'error.main' }} />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Avatar
+                src={getIconUrl(comment.profile?.icon_url)}
+                sx={{ width: 16, height: 16 }}
+              >
+                {comment.profile?.channel_name?.[0]?.toUpperCase() || "U"}
+              </Avatar>
+              <FavoriteIcon sx={{ fontSize: 14, color: "error.main" }} />
+            </Box>
           )}
           <Typography variant="caption" color="text.secondary">
             {getRelativeTime(comment.created_at)}
@@ -293,8 +320,8 @@ export default function Comment({
         <Typography
           variant="body2"
           sx={{
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
             mb: 1,
           }}
         >
@@ -302,14 +329,14 @@ export default function Comment({
         </Typography>
 
         {/* Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <IconButton
             size="small"
             onClick={handleLike}
             disabled={isLiking || !currentUserId}
-            sx={{ '&:hover': { bgcolor: 'action.hover' } }}
+            sx={{ "&:hover": { bgcolor: "action.hover" } }}
           >
-            {localUserLikeType === 'like' ? (
+            {localUserLikeType === "like" ? (
               <ThumbUpIcon fontSize="small" />
             ) : (
               <ThumbUpOutlinedIcon fontSize="small" />
@@ -324,9 +351,9 @@ export default function Comment({
             size="small"
             onClick={handleDislike}
             disabled={isLiking || !currentUserId}
-            sx={{ '&:hover': { bgcolor: 'action.hover' } }}
+            sx={{ "&:hover": { bgcolor: "action.hover" } }}
           >
-            {localUserLikeType === 'dislike' ? (
+            {localUserLikeType === "dislike" ? (
               <ThumbDownIcon fontSize="small" />
             ) : (
               <ThumbDownOutlinedIcon fontSize="small" />
@@ -339,9 +366,9 @@ export default function Comment({
               onClick={() => setShowReplyInput(!showReplyInput)}
               disabled={!currentUserId}
               sx={{
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 500,
-                fontSize: '0.75rem',
+                fontSize: "0.75rem",
                 ml: 1,
               }}
             >
@@ -361,12 +388,14 @@ export default function Comment({
               >
                 {isVideoCreator && !comment.parent_comment_id && (
                   <MenuItem onClick={handlePin}>
-                    {comment.is_pinned ? '固定を解除' : 'コメントを固定'}
+                    {comment.is_pinned ? "固定を解除" : "コメントを固定"}
                   </MenuItem>
                 )}
                 {isVideoCreator && (
                   <MenuItem onClick={handleCreatorLike}>
-                    {comment.is_creator_liked ? 'ハートを解除' : 'ハートをつける'}
+                    {comment.is_creator_liked
+                      ? "ハートを解除"
+                      : "ハートをつける"}
                   </MenuItem>
                 )}
                 {isOwner && <MenuItem onClick={handleDelete}>削除</MenuItem>}
@@ -380,7 +409,9 @@ export default function Comment({
           <Box sx={{ mt: 2 }}>
             <CommentInput
               onSubmit={handleReplySubmit}
-              placeholder={`@${comment.profile?.channel_name || 'ユーザー'} に返信...`}
+              placeholder={`@${
+                comment.profile?.channel_name || "ユーザー"
+              } に返信...`}
               autoFocus
             />
           </Box>
@@ -392,14 +423,18 @@ export default function Comment({
             <Button
               size="small"
               onClick={handleShowReplies}
-              startIcon={isLoadingReplies ? <CircularProgress size={16} /> : null}
+              startIcon={
+                isLoadingReplies ? <CircularProgress size={16} /> : null
+              }
               sx={{
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 500,
-                color: 'primary.main',
+                color: "primary.main",
               }}
             >
-              {showReplies ? '返信を非表示' : `${comment.reply_count} 件の返信を表示`}
+              {showReplies
+                ? "返信を非表示"
+                : `${comment.reply_count} 件の返信を表示`}
             </Button>
           </Box>
         )}
@@ -425,14 +460,16 @@ export default function Comment({
                   size="small"
                   onClick={() => onLoadMoreReplies(comment.id)}
                   disabled={isLoadingReplies}
-                  startIcon={isLoadingReplies ? <CircularProgress size={16} /> : null}
+                  startIcon={
+                    isLoadingReplies ? <CircularProgress size={16} /> : null
+                  }
                   sx={{
-                    textTransform: 'none',
+                    textTransform: "none",
                     fontWeight: 500,
-                    color: 'primary.main',
+                    color: "primary.main",
                   }}
                 >
-                  {isLoadingReplies ? '読み込み中...' : 'さらに返信を読み込む'}
+                  {isLoadingReplies ? "読み込み中..." : "さらに返信を読み込む"}
                 </Button>
               </Box>
             )}
