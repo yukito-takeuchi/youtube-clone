@@ -31,8 +31,8 @@ export default function CommentSection({
   const [repliesHasMoreMap, setRepliesHasMoreMap] = useState<Record<number, boolean>>({});
 
   const observerTarget = useRef<HTMLDivElement>(null);
-  const LIMIT = 20;
-  const REPLIES_LIMIT = 20;
+  const LIMIT = 10;
+  const REPLIES_LIMIT = 10;
   const MIN_LOADING_TIME = 500; // Minimum time to show loading indicator (ms)
 
   // Load initial comments and comment count
