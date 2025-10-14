@@ -63,12 +63,15 @@ func (r *VideoRepository) FindByID(ctx context.Context, id int64) (*model.Video,
 	return video, nil
 }
 
-func (r *VideoRepository) FindAll(ctx context.Context) ([]*model.Video, error) {
-	rows, err := r.db.Pool.Query(ctx, `
+func (r *VideoRepository) FindAll(ctx context.Context, limit, offset int) ([]*model.Video, error) {
+	query := `
 		SELECT id, user_id, title, description, video_url, thumbnail_url, duration, view_count, created_at, updated_at
 		FROM videos
 		ORDER BY created_at DESC
-	`)
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := r.db.Pool.Query(ctx, query, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find videos: %w", err)
 	}

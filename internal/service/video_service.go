@@ -132,8 +132,8 @@ func (s *VideoService) GetByID(ctx context.Context, id int64) (*model.VideoWithP
 	return videoWithProfile, nil
 }
 
-func (s *VideoService) List(ctx context.Context) ([]*model.VideoWithProfile, error) {
-	videos, err := s.videoRepo.FindAll(ctx)
+func (s *VideoService) List(ctx context.Context, limit, offset int) ([]*model.VideoWithProfile, error) {
+	videos, err := s.videoRepo.FindAll(ctx, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find videos: %w", err)
 	}
