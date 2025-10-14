@@ -147,7 +147,16 @@ func (h *VideoHandler) GetByID(c *gin.Context) {
 }
 
 func (h *VideoHandler) List(c *gin.Context) {
-	videos, err := h.videoService.List(c.Request.Context())
+	// Parse pagination parameters
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "15"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	// Limit max limit to 100
+	if limit > 100 {
+		limit = 100
+	}
+
+	videos, err := h.videoService.List(c.Request.Context(), limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
