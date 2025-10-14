@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Video } from "@/types";
 import { api } from "@/lib/api";
 import VideoCard from "@/components/VideoCard";
+import { CircularProgress, Box } from "@mui/material";
 
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -85,9 +86,9 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">読み込み中...</div>
-      </div>
+      <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+        <CircularProgress size={60} />
+      </Box>
     );
   }
 
@@ -116,7 +117,9 @@ export default function HomePage() {
           {/* Loading indicator and observer target */}
           <div ref={observerTarget} className="flex justify-center py-8">
             {isLoading && (
-              <div className="text-center text-gray-500">読み込み中...</div>
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={40} />
+              </Box>
             )}
           </div>
         </>
