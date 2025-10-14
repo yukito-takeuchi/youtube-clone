@@ -480,7 +480,15 @@ export default function VideoDetailPage() {
         {/* Main Content */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Video Player */}
-          <Box sx={{ maxWidth: 1280, maxHeight: 550, width: "100%" }}>
+          <Box sx={{
+            maxWidth: 1280,
+            height: 'calc(100vh - 250px)',
+            width: "100%",
+            '& > div': {
+              height: '100%',
+              maxHeight: '100%',
+            }
+          }}>
             <VideoPlayer videoUrl={video.video_url} title={video.title} />
           </Box>
 
