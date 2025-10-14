@@ -40,6 +40,36 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, PlaylistVideo } from "@/types";
 
+// Helper function to format relative date
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears}年前`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths}ヶ月前`;
+  } else if (diffWeeks > 0) {
+    return `${diffWeeks}週間前`;
+  } else if (diffDays > 0) {
+    return `${diffDays}日前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}時間前`;
+  } else if (diffMins > 0) {
+    return `${diffMins}分前`;
+  } else {
+    return "数秒前";
+  }
+}
+
 export default function PlaylistDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -477,15 +507,7 @@ export default function PlaylistDetailPage() {
                         </Typography>
 
                         <Typography variant="caption" color="text.secondary">
-                          {video.view_count.toLocaleString()}回視聴 •{" "}
-                          {new Date(video.created_at).toLocaleDateString(
-                            "ja-JP",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )}
+                          {video.view_count.toLocaleString()}回視聴 • {getRelativeTime(video.created_at)}
                         </Typography>
                       </Box>
 
