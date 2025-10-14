@@ -498,16 +498,8 @@ export default function PlaylistDetailPage() {
                           {video.title}
                         </Typography>
 
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: "block", mb: 0.5 }}
-                        >
-                          {video.profile?.channel_name || "チャンネル名"}
-                        </Typography>
-
                         <Typography variant="caption" color="text.secondary">
-                          {video.view_count.toLocaleString()}回視聴 • {getRelativeTime(video.created_at)}
+                          {video.profile?.channel_name || "チャンネル名"} • {video.view_count.toLocaleString()}回視聴 • {getRelativeTime(video.created_at)}
                         </Typography>
                       </Box>
 
