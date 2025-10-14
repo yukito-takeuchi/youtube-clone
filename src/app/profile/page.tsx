@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, Video } from "@/types";
+import { getIconUrl } from "@/lib/defaults";
 
 // Dummy history data
 const dummyHistoryVideos: Video[] = [
@@ -746,7 +747,7 @@ export default function MyPage() {
       {/* Compact Profile Header */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
         <Avatar
-          src={profile?.icon_url}
+          src={getIconUrl(profile?.icon_url)}
           onClick={handleChannelClick}
           sx={{
             width: 56,

@@ -29,6 +29,36 @@ import Link from "next/link";
 import PlaylistDialog from "@/components/PlaylistDialog";
 import { getIconUrl } from "@/lib/defaults";
 
+// Helper function to format relative date
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears}年前`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths}ヶ月前`;
+  } else if (diffWeeks > 0) {
+    return `${diffWeeks}週間前`;
+  } else if (diffDays > 0) {
+    return `${diffDays}日前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}時間前`;
+  } else if (diffMins > 0) {
+    return `${diffMins}分前`;
+  } else {
+    return '数秒前';
+  }
+}
+
 // Dummy related videos
 const dummyRelatedVideos: Video[] = [
   {
@@ -422,15 +452,30 @@ export default function VideoDetailPage() {
   };
 
   return (
-    <Container maxWidth={false} sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 2 }}>
+    <Container maxWidth={false} sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 1 }}>
       <Box sx={{ display: "flex", gap: 3, px: 2 }}>
         {/* Main Content */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Video Player */}
-          <VideoPlayer videoUrl={video.video_url} title={video.title} />
+          <Box sx={{ maxWidth: 1280, maxHeight: 550, width: '100%' }}>
+            <VideoPlayer videoUrl={video.video_url} title={video.title} />
+          </Box>
 
           {/* Video Title */}
-          <Typography variant="h5" sx={{ mt: 2, mb: 2, fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              mt: 1.5,
+              mb: 1.5,
+              fontWeight: 600,
+              fontSize: '1.25rem',
+              lineHeight: 1.4,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
             {video.title}
           </Typography>
 
@@ -440,7 +485,7 @@ export default function VideoDetailPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: 1.5,
             }}
           >
             {/* Channel Info */}
@@ -571,7 +616,7 @@ export default function VideoDetailPage() {
               bgcolor: "action.hover",
               borderRadius: 2,
               p: 2,
-              mt: 2,
+              mt: 1.5,
               cursor: showFullDescription ? "default" : "pointer",
               "&:hover": showFullDescription ? {} : {
                 bgcolor: "action.selected"
@@ -583,19 +628,14 @@ export default function VideoDetailPage() {
               variant="body2"
               sx={{ fontWeight: 600, mb: 1 }}
             >
-              {video.view_count.toLocaleString()} 回視聴 •{" "}
-              {new Date(video.created_at).toLocaleDateString("ja-JP", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {video.view_count.toLocaleString()} 回視聴 • {getRelativeTime(video.created_at)}
             </Typography>
             <Typography
               variant="body2"
               sx={{
                 whiteSpace: "pre-wrap",
                 display: showFullDescription ? "block" : "-webkit-box",
-                WebkitLineClamp: showFullDescription ? "unset" : 2,
+                WebkitLineClamp: showFullDescription ? "unset" : 1,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 wordBreak: "break-word"
