@@ -53,6 +53,11 @@ export default function PlaylistDetailPage() {
   const playlistId = Number(params.id);
   const isOwner = playlist && user && playlist.user_id === user.id;
 
+  // プレイリストがデフォルトかどうかを判定する関数
+  const isDefaultPlaylist = (title: string) => {
+    return title === "あとで見る" || title === "高く評価した動画";
+  };
+
   useEffect(() => {
     if (playlistId) {
       fetchPlaylistData();
@@ -248,7 +253,7 @@ export default function PlaylistDetailPage() {
                 <Typography variant="h5" sx={{ fontWeight: 600, flex: 1 }}>
                   {playlist.title}
                 </Typography>
-                {isOwner && (
+                {isOwner && !isDefaultPlaylist(playlist?.title || "") && (
                   <IconButton
                     size="small"
                     onClick={handleMenuOpen}
@@ -473,14 +478,14 @@ export default function PlaylistDetailPage() {
 
                         <Typography variant="caption" color="text.secondary">
                           {video.view_count.toLocaleString()}回視聴 •{" "}
-                          {new Date(
-                            playlistVideo.created_at
-                          ).toLocaleDateString("ja-JP", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}{" "}
-                          に追加
+                          {new Date(video.created_at).toLocaleDateString(
+                            "ja-JP",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )}
                         </Typography>
                       </Box>
 
@@ -488,18 +493,19 @@ export default function PlaylistDetailPage() {
                       <Box
                         sx={{ display: "flex", alignItems: "center", ml: 2 }}
                       >
-                        {isOwner && (
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Remove from playlist functionality (準備中)
-                            }}
-                            sx={{ opacity: 0.7 }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        )}
+                        {isOwner &&
+                          !isDefaultPlaylist(playlist?.title || "") && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Remove from playlist functionality (準備中)
+                              }}
+                              sx={{ opacity: 0.7 }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          )}
                       </Box>
                     </Box>
                   </ListItem>

@@ -27,6 +27,38 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import PlaylistDialog from "@/components/PlaylistDialog";
+import CommentSection from "@/components/CommentSection";
+import { getIconUrl } from "@/lib/defaults";
+
+// Helper function to format relative date
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears}年前`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths}ヶ月前`;
+  } else if (diffWeeks > 0) {
+    return `${diffWeeks}週間前`;
+  } else if (diffDays > 0) {
+    return `${diffDays}日前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}時間前`;
+  } else if (diffMins > 0) {
+    return `${diffMins}分前`;
+  } else {
+    return "数秒前";
+  }
+}
 
 // Dummy related videos
 const dummyRelatedVideos: Video[] = [
@@ -45,6 +77,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 10,
       channel_name: "React Tips",
       icon_url: "https://picsum.photos/seed/channel1/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -64,6 +98,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 11,
       channel_name: "TypeScript Pro",
       icon_url: "https://picsum.photos/seed/channel2/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -83,6 +119,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 12,
       channel_name: "Next.js Master",
       icon_url: "https://picsum.photos/seed/channel3/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -102,6 +140,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 13,
       channel_name: "UI Design",
       icon_url: "https://picsum.photos/seed/channel4/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -121,6 +161,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 14,
       channel_name: "Web Dev Pro",
       icon_url: "https://picsum.photos/seed/channel5/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -140,6 +182,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 15,
       channel_name: "JS Performance",
       icon_url: "https://picsum.photos/seed/channel6/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -159,6 +203,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 16,
       channel_name: "API Design",
       icon_url: "https://picsum.photos/seed/channel7/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -178,6 +224,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 17,
       channel_name: "DevOps Guide",
       icon_url: "https://picsum.photos/seed/channel8/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -197,6 +245,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 18,
       channel_name: "Git Master",
       icon_url: "https://picsum.photos/seed/channel9/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -216,6 +266,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 19,
       channel_name: "CSS Expert",
       icon_url: "https://picsum.photos/seed/channel10/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -235,6 +287,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 20,
       channel_name: "A11y Guide",
       icon_url: "https://picsum.photos/seed/channel11/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -254,6 +308,8 @@ const dummyRelatedVideos: Video[] = [
       user_id: 21,
       channel_name: "Modern JS",
       icon_url: "https://picsum.photos/seed/channel12/36/36",
+      description: "",
+      banner_url: "",
       created_at: "",
       updated_at: "",
     },
@@ -279,6 +335,9 @@ export default function VideoDetailPage() {
 
   // Description collapse state
   const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // User profile state
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -323,6 +382,22 @@ export default function VideoDetailPage() {
 
     fetchStatuses();
   }, [video, isAuthenticated]);
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const profile = await api.getMyProfile();
+        setUserProfile(profile);
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [isAuthenticated]);
 
   if (loading) {
     return (
@@ -397,15 +472,43 @@ export default function VideoDetailPage() {
   };
 
   return (
-    <Container maxWidth={false} sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 2 }}>
+    <Container
+      maxWidth={false}
+      sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 1 }}
+    >
       <Box sx={{ display: "flex", gap: 3, px: 2 }}>
         {/* Main Content */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Video Player */}
-          <VideoPlayer videoUrl={video.video_url} title={video.title} />
+          <Box sx={{
+            width: "100%",
+            maxHeight: 'calc(100vh - 200px)',
+            '& > div': {
+              width: '100%',
+              height: '100%',
+              '& video': {
+                objectFit: 'contain',
+              }
+            }
+          }}>
+            <VideoPlayer videoUrl={video.video_url} title={video.title} />
+          </Box>
 
           {/* Video Title */}
-          <Typography variant="h5" sx={{ mt: 2, mb: 2, fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              mt: 1.5,
+              mb: 1.5,
+              fontWeight: 600,
+              fontSize: "1.25rem",
+              lineHeight: 1.4,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
             {video.title}
           </Typography>
 
@@ -415,7 +518,7 @@ export default function VideoDetailPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: 1.5,
             }}
           >
             {/* Channel Info */}
@@ -431,7 +534,7 @@ export default function VideoDetailPage() {
                 }}
               >
                 <Avatar
-                  src={video.profile?.icon_url}
+                  src={getIconUrl(video.profile?.icon_url)}
                   sx={{
                     width: 40,
                     height: 40,
@@ -464,9 +567,7 @@ export default function VideoDetailPage() {
                   onClick={handleSubscribe}
                   sx={{
                     bgcolor: isSubscribed ? "action.hover" : "text.primary",
-                    color: isSubscribed
-                      ? "text.primary"
-                      : "background.paper",
+                    color: isSubscribed ? "text.primary" : "background.paper",
                     borderRadius: 50,
                     px: 3,
                     ml: 1,
@@ -546,34 +647,29 @@ export default function VideoDetailPage() {
               bgcolor: "action.hover",
               borderRadius: 2,
               p: 2,
-              mt: 2,
+              mt: 1.5,
               cursor: showFullDescription ? "default" : "pointer",
-              "&:hover": showFullDescription ? {} : {
-                bgcolor: "action.selected"
-              }
+              "&:hover": showFullDescription
+                ? {}
+                : {
+                    bgcolor: "action.selected",
+                  },
             }}
             onClick={() => !showFullDescription && setShowFullDescription(true)}
           >
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, mb: 1 }}
-            >
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
               {video.view_count.toLocaleString()} 回視聴 •{" "}
-              {new Date(video.created_at).toLocaleDateString("ja-JP", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {getRelativeTime(video.created_at)}
             </Typography>
             <Typography
               variant="body2"
               sx={{
                 whiteSpace: "pre-wrap",
                 display: showFullDescription ? "block" : "-webkit-box",
-                WebkitLineClamp: showFullDescription ? "unset" : 2,
+                WebkitLineClamp: showFullDescription ? "unset" : 1,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
-                wordBreak: "break-word"
+                wordBreak: "break-word",
               }}
             >
               {video.description || "説明はありません"}
@@ -594,8 +690,8 @@ export default function VideoDetailPage() {
                   minWidth: "auto",
                   "&:hover": {
                     bgcolor: "transparent",
-                    textDecoration: "underline"
-                  }
+                    textDecoration: "underline",
+                  },
                 }}
               >
                 簡潔に表示
@@ -604,39 +700,17 @@ export default function VideoDetailPage() {
           </Box>
 
           {/* Comments Section */}
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              コメント • 0
-            </Typography>
-
-            {/* Comment Input */}
-            {isAuthenticated && (
-              <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-                <Avatar sx={{ width: 40, height: 40 }}>
-                  {user?.email?.[0]?.toUpperCase() || "U"}
-                </Avatar>
-                <TextField
-                  fullWidth
-                  placeholder="コメントを追加..."
-                  variant="standard"
-                  disabled
-                />
-              </Box>
-            )}
-
-            {/* Comments List */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: "center", py: 4 }}
-            >
-              コメント機能は未実装です
-            </Typography>
-          </Box>
+          <CommentSection
+            videoId={video.id}
+            videoCreatorId={video.user_id}
+            videoCreatorProfile={video.profile}
+            currentUserId={user?.id}
+            currentUserProfile={userProfile}
+          />
         </Box>
 
         {/* Sidebar - Related Videos */}
-        <Box sx={{ width: 420, display: { xs: "none", lg: "block" } }}>
+        <Box sx={{ width: 402, flexShrink: 0, display: { xs: "none", lg: "block" } }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {dummyRelatedVideos.map((relatedVideo) => (
               <Card

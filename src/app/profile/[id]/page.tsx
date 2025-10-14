@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import VideoCard from '@/components/VideoCard';
 import ChannelCustomizeDialog from '@/components/ChannelCustomizeDialog';
+import { getIconUrl, getBannerUrl } from '@/lib/defaults';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -140,7 +141,7 @@ export default function ProfileDetailPage() {
           sx={{
             height: 200,
             bgcolor: 'grey.300',
-            backgroundImage: profile.banner_url ? `url(${profile.banner_url})` : 'none',
+            backgroundImage: `url(${getBannerUrl(profile.banner_url)})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -149,7 +150,7 @@ export default function ProfileDetailPage() {
         {/* Profile Info */}
         <Box sx={{ px: 3, pt: 3, pb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3, mb: 2 }}>
-            <Avatar src={profile.icon_url} sx={{ width: 100, height: 100, border: '4px solid white', mt: -8 }}>
+            <Avatar src={getIconUrl(profile.icon_url)} sx={{ width: 100, height: 100, border: '4px solid white', mt: -8 }}>
               {profile.channel_name?.[0]?.toUpperCase() || 'U'}
             </Avatar>
             <Box sx={{ flex: 1 }}>

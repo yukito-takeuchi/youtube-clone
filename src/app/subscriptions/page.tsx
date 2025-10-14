@@ -1,32 +1,49 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Video } from '@/types';
-import { api } from '@/lib/api';
-import VideoCard from '@/components/VideoCard';
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Video } from "@/types";
+import { api } from "@/lib/api";
+import VideoCard from "@/components/VideoCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { CircularProgress, Box } from "@mui/material";
 
 export default function SubscriptionsPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     const fetchSubscriptionFeed = async () => {
+      const startTime = Date.now();
+
       try {
         const data = await api.getSubscriptionFeed(50, 0);
+
+        // Ensure minimum loading time for better UX
+        const elapsedTime = Date.now() - startTime;
+        const MIN_LOADING_TIME = 500;
+        if (elapsedTime < MIN_LOADING_TIME) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+          );
+        }
+
         setVideos(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '登録チャンネルの動画の読み込みに失敗しました');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "登録チャンネルの動画の読み込みに失敗しました"
+        );
       } finally {
         setLoading(false);
       }
@@ -37,9 +54,9 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">読み込み中...</div>
-      </div>
+      <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+        <CircularProgress size={60} />
+      </Box>
     );
   }
 
@@ -59,7 +76,9 @@ export default function SubscriptionsPage() {
       {videos.length === 0 ? (
         <div className="text-center text-gray-500 py-12">
           <p className="mb-2">登録チャンネルの動画がありません</p>
-          <p className="text-sm">チャンネルを登録すると、ここに最新の動画が表示されます</p>
+          <p className="text-sm">
+            チャンネルを登録すると、ここに最新の動画が表示されます
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-x-4 gap-y-8">
