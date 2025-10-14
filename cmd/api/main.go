@@ -95,6 +95,7 @@ func main() {
 	videoRepo := repository.NewVideoRepository(db)
 	playlistRepo := repository.NewPlaylistRepository(db)
 	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	commentRepo := repository.NewCommentRepository(db)
 
 	// Initialize services with the storage interface
 	authService := service.NewAuthService(userRepo, profileRepo, playlistRepo, jwtSecret, defaultIconURL, defaultBannerURL)
@@ -102,6 +103,7 @@ func main() {
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
 	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo, userRepo, videoRepo)
+	commentService := service.NewCommentService(commentRepo, videoRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
@@ -109,6 +111,7 @@ func main() {
 	videoHandler := handler.NewVideoHandler(videoService)
 	playlistHandler := handler.NewPlaylistHandler(playlistService)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
+	commentHandler := handler.NewCommentHandler(commentService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtSecret)
@@ -226,6 +229,25 @@ func main() {
 		{
 			feed.Use(authMiddleware.RequireAuth())
 			feed.GET("/subscriptions", subscriptionHandler.GetSubscriptionFeed)
+		}
+
+		// Comment routes
+		comments := api.Group("/comments")
+		{
+			// Public routes (with optional auth for like status)
+			comments.GET("/videos/:video_id", commentHandler.GetCommentsByVideoID)
+			comments.GET("/:parent_comment_id/replies", commentHandler.GetRepliesByParentID)
+			comments.GET("/videos/:video_id/count", commentHandler.GetCommentCount)
+
+			// Protected routes
+			comments.Use(authMiddleware.RequireAuth())
+			comments.POST("", commentHandler.Create)
+			comments.PUT("/:id", commentHandler.Update)
+			comments.DELETE("/:id", commentHandler.Delete)
+			comments.POST("/:id/pin", commentHandler.PinComment)
+			comments.POST("/:id/creator-like", commentHandler.SetCreatorLiked)
+			comments.POST("/:id/like", commentHandler.LikeComment)
+			comments.DELETE("/:id/like", commentHandler.UnlikeComment)
 		}
 	}
 

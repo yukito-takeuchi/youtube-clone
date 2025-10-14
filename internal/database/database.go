@@ -188,5 +188,76 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 		return fmt.Errorf("failed to create subscriptions subscribed_to index: %w", err)
 	}
 
+	// Create comments table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS comments (
+			id BIGSERIAL PRIMARY KEY,
+			video_id BIGINT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			parent_comment_id BIGINT REFERENCES comments(id) ON DELETE CASCADE,
+			content TEXT NOT NULL,
+			like_count BIGINT NOT NULL DEFAULT 0,
+			is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
+			is_creator_liked BOOLEAN NOT NULL DEFAULT FALSE,
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comments table: %w", err)
+	}
+
+	// Create indexes for comments
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_comments_video_id ON comments(video_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comments video_id index: %w", err)
+	}
+
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comments user_id index: %w", err)
+	}
+
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_comments_parent_comment_id ON comments(parent_comment_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comments parent_comment_id index: %w", err)
+	}
+
+	// Create comment_likes table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS comment_likes (
+			id BIGSERIAL PRIMARY KEY,
+			comment_id BIGINT NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			like_type VARCHAR(10) NOT NULL CHECK (like_type IN ('like', 'dislike')),
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			UNIQUE(comment_id, user_id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comment_likes table: %w", err)
+	}
+
+	// Create indexes for comment_likes
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_id ON comment_likes(comment_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comment_likes comment_id index: %w", err)
+	}
+
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_comment_likes_user_id ON comment_likes(user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create comment_likes user_id index: %w", err)
+	}
+
 	return nil
 }
