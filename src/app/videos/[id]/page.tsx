@@ -27,6 +27,7 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import PlaylistDialog from "@/components/PlaylistDialog";
+import CommentSection from "@/components/CommentSection";
 import { getIconUrl } from "@/lib/defaults";
 
 // Helper function to format relative date
@@ -335,6 +336,9 @@ export default function VideoDetailPage() {
   // Description collapse state
   const [showFullDescription, setShowFullDescription] = useState(false);
 
+  // User profile state
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   useEffect(() => {
     const fetchVideo = async () => {
       try {
@@ -378,6 +382,22 @@ export default function VideoDetailPage() {
 
     fetchStatuses();
   }, [video, isAuthenticated]);
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const profile = await api.getMyProfile();
+        setUserProfile(profile);
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [isAuthenticated]);
 
   if (loading) {
     return (
@@ -669,35 +689,12 @@ export default function VideoDetailPage() {
           </Box>
 
           {/* Comments Section */}
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              コメント • 0
-            </Typography>
-
-            {/* Comment Input */}
-            {isAuthenticated && (
-              <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-                <Avatar sx={{ width: 40, height: 40 }}>
-                  {user?.email?.[0]?.toUpperCase() || "U"}
-                </Avatar>
-                <TextField
-                  fullWidth
-                  placeholder="コメントを追加..."
-                  variant="standard"
-                  disabled
-                />
-              </Box>
-            )}
-
-            {/* Comments List */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: "center", py: 4 }}
-            >
-              コメント機能は未実装です
-            </Typography>
-          </Box>
+          <CommentSection
+            videoId={video.id}
+            videoCreatorId={video.user_id}
+            currentUserId={user?.id}
+            currentUserProfile={userProfile}
+          />
         </Box>
 
         {/* Sidebar - Related Videos */}

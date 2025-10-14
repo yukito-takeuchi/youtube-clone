@@ -92,3 +92,34 @@ export interface Subscription {
 export interface SubscriptionWithProfile extends Subscription {
   profile: Profile;
 }
+
+export interface Comment {
+  id: number;
+  video_id: number;
+  user_id: number;
+  parent_comment_id: number | null;
+  content: string;
+  like_count: number;
+  is_pinned: boolean;
+  is_creator_liked: boolean;
+  created_at: string;
+  updated_at: string;
+  profile?: Profile;
+  reply_count?: number;
+  user_like_type?: string | null; // "like", "dislike", or null
+  is_video_creator?: boolean;
+}
+
+export interface CreateCommentRequest {
+  video_id: number;
+  parent_comment_id?: number | null;
+  content: string;
+}
+
+export interface UpdateCommentRequest {
+  content: string;
+}
+
+export interface LikeCommentRequest {
+  like_type: "like" | "dislike";
+}

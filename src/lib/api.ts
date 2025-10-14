@@ -10,6 +10,10 @@ import {
   AddVideoToPlaylistRequest,
   PlaylistVideo,
   SubscriptionWithProfile,
+  Comment,
+  CreateCommentRequest,
+  UpdateCommentRequest,
+  LikeCommentRequest,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -292,6 +296,90 @@ class ApiClient {
 
   async getLikedVideos(): Promise<PlaylistVideo[]> {
     return this.request("/api/videos/liked");
+  }
+
+  // Comments
+  async createComment(data: CreateCommentRequest): Promise<Comment> {
+    return this.request("/api/comments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getCommentsByVideoID(
+    videoId: number,
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<Comment[]> {
+    return this.request(
+      `/api/comments/videos/${videoId}?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async getRepliesByParentID(
+    parentCommentId: number,
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<Comment[]> {
+    return this.request(
+      `/api/comments/${parentCommentId}/replies?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async updateComment(
+    commentId: number,
+    data: UpdateCommentRequest
+  ): Promise<Comment> {
+    return this.request(`/api/comments/${commentId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteComment(commentId: number): Promise<void> {
+    return this.request(`/api/comments/${commentId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async pinComment(commentId: number, isPinned: boolean): Promise<void> {
+    return this.request(`/api/comments/${commentId}/pin`, {
+      method: "POST",
+      body: JSON.stringify({ is_pinned: isPinned }),
+    });
+  }
+
+  async setCreatorLiked(
+    commentId: number,
+    isCreatorLiked: boolean
+  ): Promise<void> {
+    return this.request(`/api/comments/${commentId}/creator-like`, {
+      method: "POST",
+      body: JSON.stringify({ is_creator_liked: isCreatorLiked }),
+    });
+  }
+
+  async likeComment(
+    commentId: number,
+    data: LikeCommentRequest
+  ): Promise<void> {
+    return this.request(`/api/comments/${commentId}/like`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async unlikeComment(commentId: number): Promise<void> {
+    return this.request(`/api/comments/${commentId}/like`, {
+      method: "DELETE",
+    });
+  }
+
+  async getCommentCount(videoId: number): Promise<number> {
+    const response = await this.request<{ count: number }>(
+      `/api/comments/videos/${videoId}/count`
+    );
+    return response.count;
   }
 }
 
