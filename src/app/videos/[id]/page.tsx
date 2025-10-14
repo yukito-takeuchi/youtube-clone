@@ -56,7 +56,7 @@ function getRelativeTime(dateString: string): string {
   } else if (diffMins > 0) {
     return `${diffMins}分前`;
   } else {
-    return '数秒前';
+    return "数秒前";
   }
 }
 
@@ -472,12 +472,15 @@ export default function VideoDetailPage() {
   };
 
   return (
-    <Container maxWidth={false} sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 1 }}>
+    <Container
+      maxWidth={false}
+      sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 1 }}
+    >
       <Box sx={{ display: "flex", gap: 3, px: 2 }}>
         {/* Main Content */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Video Player */}
-          <Box sx={{ maxWidth: 1280, maxHeight: 550, width: '100%' }}>
+          <Box sx={{ maxWidth: 1280, maxHeight: 550, width: "100%" }}>
             <VideoPlayer videoUrl={video.video_url} title={video.title} />
           </Box>
 
@@ -488,12 +491,12 @@ export default function VideoDetailPage() {
               mt: 1.5,
               mb: 1.5,
               fontWeight: 600,
-              fontSize: '1.25rem',
+              fontSize: "1.25rem",
               lineHeight: 1.4,
-              display: '-webkit-box',
+              display: "-webkit-box",
               WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden'
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
             {video.title}
@@ -554,9 +557,7 @@ export default function VideoDetailPage() {
                   onClick={handleSubscribe}
                   sx={{
                     bgcolor: isSubscribed ? "action.hover" : "text.primary",
-                    color: isSubscribed
-                      ? "text.primary"
-                      : "background.paper",
+                    color: isSubscribed ? "text.primary" : "background.paper",
                     borderRadius: 50,
                     px: 3,
                     ml: 1,
@@ -638,17 +639,17 @@ export default function VideoDetailPage() {
               p: 2,
               mt: 1.5,
               cursor: showFullDescription ? "default" : "pointer",
-              "&:hover": showFullDescription ? {} : {
-                bgcolor: "action.selected"
-              }
+              "&:hover": showFullDescription
+                ? {}
+                : {
+                    bgcolor: "action.selected",
+                  },
             }}
             onClick={() => !showFullDescription && setShowFullDescription(true)}
           >
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, mb: 1 }}
-            >
-              {video.view_count.toLocaleString()} 回視聴 • {getRelativeTime(video.created_at)}
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+              {video.view_count.toLocaleString()} 回視聴 •{" "}
+              {getRelativeTime(video.created_at)}
             </Typography>
             <Typography
               variant="body2"
@@ -658,7 +659,7 @@ export default function VideoDetailPage() {
                 WebkitLineClamp: showFullDescription ? "unset" : 1,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
-                wordBreak: "break-word"
+                wordBreak: "break-word",
               }}
             >
               {video.description || "説明はありません"}
@@ -679,8 +680,8 @@ export default function VideoDetailPage() {
                   minWidth: "auto",
                   "&:hover": {
                     bgcolor: "transparent",
-                    textDecoration: "underline"
-                  }
+                    textDecoration: "underline",
+                  },
                 }}
               >
                 簡潔に表示
@@ -692,6 +693,7 @@ export default function VideoDetailPage() {
           <CommentSection
             videoId={video.id}
             videoCreatorId={video.user_id}
+            videoCreatorProfile={video.profile}
             currentUserId={user?.id}
             currentUserProfile={userProfile}
           />

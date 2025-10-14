@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Typography, CircularProgress, Divider } from '@mui/material';
-import { Comment as CommentType, Profile } from '@/types';
-import { api } from '@/lib/api';
-import CommentInput from './CommentInput';
-import Comment from './Comment';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Box, Typography, CircularProgress, Divider } from "@mui/material";
+import { Comment as CommentType, Profile } from "@/types";
+import { api } from "@/lib/api";
+import CommentInput from "./CommentInput";
+import Comment from "./Comment";
 
 interface CommentSectionProps {
   videoId: number;
   videoCreatorId: number;
+  videoCreatorProfile?: Profile;
   currentUserId?: number;
   currentUserProfile?: Profile;
 }
@@ -17,6 +18,7 @@ interface CommentSectionProps {
 export default function CommentSection({
   videoId,
   videoCreatorId,
+  videoCreatorProfile,
   currentUserId,
   currentUserProfile,
 }: CommentSectionProps) {
@@ -25,10 +27,18 @@ export default function CommentSection({
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [repliesMap, setRepliesMap] = useState<Record<number, CommentType[]>>({});
-  const [loadingRepliesMap, setLoadingRepliesMap] = useState<Record<number, boolean>>({});
-  const [repliesOffsetMap, setRepliesOffsetMap] = useState<Record<number, number>>({});
-  const [repliesHasMoreMap, setRepliesHasMoreMap] = useState<Record<number, boolean>>({});
+  const [repliesMap, setRepliesMap] = useState<Record<number, CommentType[]>>(
+    {}
+  );
+  const [loadingRepliesMap, setLoadingRepliesMap] = useState<
+    Record<number, boolean>
+  >({});
+  const [repliesOffsetMap, setRepliesOffsetMap] = useState<
+    Record<number, number>
+  >({});
+  const [repliesHasMoreMap, setRepliesHasMoreMap] = useState<
+    Record<number, boolean>
+  >({});
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const LIMIT = 10;
@@ -69,7 +79,7 @@ export default function CommentSection({
       const count = await api.getCommentCount(videoId);
       setCommentCount(count);
     } catch (error) {
-      console.error('Failed to load comment count:', error);
+      console.error("Failed to load comment count:", error);
     }
   };
 
@@ -81,12 +91,18 @@ export default function CommentSection({
 
     try {
       const currentOffset = reset ? 0 : offset;
-      const newComments = await api.getCommentsByVideoID(videoId, LIMIT, currentOffset);
+      const newComments = await api.getCommentsByVideoID(
+        videoId,
+        LIMIT,
+        currentOffset
+      );
 
       // Ensure minimum loading time for better UX
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < MIN_LOADING_TIME) {
-        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
       }
 
       if (reset) {
@@ -99,7 +115,7 @@ export default function CommentSection({
 
       setHasMore(newComments.length === LIMIT);
     } catch (error) {
-      console.error('Failed to load comments:', error);
+      console.error("Failed to load comments:", error);
     } finally {
       setIsLoading(false);
     }
@@ -112,18 +128,27 @@ export default function CommentSection({
     const startTime = Date.now();
 
     try {
-      const currentOffset = reset ? 0 : (repliesOffsetMap[commentId] || 0);
-      const replies = await api.getRepliesByParentID(commentId, REPLIES_LIMIT, currentOffset);
+      const currentOffset = reset ? 0 : repliesOffsetMap[commentId] || 0;
+      const replies = await api.getRepliesByParentID(
+        commentId,
+        REPLIES_LIMIT,
+        currentOffset
+      );
 
       // Ensure minimum loading time for better UX
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < MIN_LOADING_TIME) {
-        await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
       }
 
       if (reset) {
         setRepliesMap((prev) => ({ ...prev, [commentId]: replies }));
-        setRepliesOffsetMap((prev) => ({ ...prev, [commentId]: REPLIES_LIMIT }));
+        setRepliesOffsetMap((prev) => ({
+          ...prev,
+          [commentId]: REPLIES_LIMIT,
+        }));
       } else {
         setRepliesMap((prev) => ({
           ...prev,
@@ -140,7 +165,7 @@ export default function CommentSection({
         [commentId]: replies.length === REPLIES_LIMIT,
       }));
     } catch (error) {
-      console.error('Failed to load replies:', error);
+      console.error("Failed to load replies:", error);
     } finally {
       setLoadingRepliesMap((prev) => ({ ...prev, [commentId]: false }));
     }
@@ -162,12 +187,15 @@ export default function CommentSection({
       await loadCommentCount();
       await loadComments(true);
     } catch (error) {
-      console.error('Failed to create comment:', error);
+      console.error("Failed to create comment:", error);
       throw error;
     }
   };
 
-  const handleCreateReply = async (parentCommentId: number, content: string) => {
+  const handleCreateReply = async (
+    parentCommentId: number,
+    content: string
+  ) => {
     if (!currentUserId) return;
 
     try {
@@ -181,7 +209,7 @@ export default function CommentSection({
       await loadComments(true);
       await loadReplies(parentCommentId);
     } catch (error) {
-      console.error('Failed to create reply:', error);
+      console.error("Failed to create reply:", error);
       throw error;
     }
   };
@@ -195,7 +223,7 @@ export default function CommentSection({
       await loadCommentCount();
       await loadComments(true);
     } catch (error) {
-      console.error('Failed to delete comment:', error);
+      console.error("Failed to delete comment:", error);
     }
   };
 
@@ -228,6 +256,7 @@ export default function CommentSection({
           comment={comment}
           currentUserId={currentUserId}
           videoCreatorId={videoCreatorId}
+          videoCreatorProfile={videoCreatorProfile}
           onReply={handleCreateReply}
           onDelete={handleDeleteComment}
           onLikeChange={handleLikeChange}
@@ -241,17 +270,17 @@ export default function CommentSection({
 
       {/* Loading Indicator */}
       {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
           <CircularProgress />
         </Box>
       )}
 
       {/* Infinite Scroll Observer Target */}
-      <div ref={observerTarget} style={{ height: '20px' }} />
+      <div ref={observerTarget} style={{ height: "20px" }} />
 
       {/* No More Comments */}
       {!hasMore && comments.length > 0 && (
-        <Box sx={{ textAlign: 'center', py: 3 }}>
+        <Box sx={{ textAlign: "center", py: 3 }}>
           <Typography variant="body2" color="text.secondary">
             すべてのコメントを表示しました
           </Typography>
@@ -260,7 +289,7 @@ export default function CommentSection({
 
       {/* No Comments Yet */}
       {!isLoading && comments.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 5 }}>
+        <Box sx={{ textAlign: "center", py: 5 }}>
           <Typography variant="body1" color="text.secondary">
             コメントはまだありません
           </Typography>

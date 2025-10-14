@@ -21,7 +21,7 @@ import {
   PushPin as PushPinIcon,
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
-import { Comment as CommentType } from "@/types";
+import { Comment as CommentType, Profile } from "@/types";
 import { api } from "@/lib/api";
 import { getIconUrl } from "@/lib/defaults";
 import CommentInput from "./CommentInput";
@@ -30,6 +30,7 @@ interface CommentProps {
   comment: CommentType;
   currentUserId?: number;
   videoCreatorId: number;
+  videoCreatorProfile?: Profile;
   onReply?: (commentId: number, content: string) => Promise<void>;
   onUpdate?: (commentId: number, content: string) => Promise<void>;
   onDelete?: (commentId: number) => Promise<void>;
@@ -78,6 +79,7 @@ export default function Comment({
   comment,
   currentUserId,
   videoCreatorId,
+  videoCreatorProfile,
   onReply,
   onUpdate,
   onDelete,
@@ -101,7 +103,7 @@ export default function Comment({
   useEffect(() => {
     setLocalLikeCount(comment.like_count);
     setLocalUserLikeType(comment.user_like_type);
-  }, [comment.like_count, comment.user_like_type]);
+  }, [comment.id, comment.like_count, comment.user_like_type]);
 
   const isOwner = currentUserId === comment.user_id;
   const isVideoCreator = currentUserId === videoCreatorId;
@@ -276,7 +278,7 @@ export default function Comment({
                 fontWeight: 500,
                 color: "text.primary",
                 cursor: "pointer",
-                bgcolor: isCommentByCreator ? "grey.200" : "transparent",
+                bgcolor: isCommentByCreator ? "action.selected" : "transparent",
                 px: isCommentByCreator ? 0.75 : 0,
                 py: isCommentByCreator ? 0.25 : 0,
                 borderRadius: isCommentByCreator ? 0.5 : 0,
@@ -303,10 +305,10 @@ export default function Comment({
           {comment.is_creator_liked && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <Avatar
-                src={getIconUrl(comment.profile?.icon_url)}
+                src={getIconUrl(videoCreatorProfile?.icon_url)}
                 sx={{ width: 16, height: 16 }}
               >
-                {comment.profile?.channel_name?.[0]?.toUpperCase() || "U"}
+                {videoCreatorProfile?.channel_name?.[0]?.toUpperCase() || "U"}
               </Avatar>
               <FavoriteIcon sx={{ fontSize: 14, color: "error.main" }} />
             </Box>
@@ -448,6 +450,7 @@ export default function Comment({
                 comment={reply}
                 currentUserId={currentUserId}
                 videoCreatorId={videoCreatorId}
+                videoCreatorProfile={videoCreatorProfile}
                 onUpdate={onUpdate}
                 onDelete={onDelete}
                 onLikeChange={onLikeChange}
