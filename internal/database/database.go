@@ -259,5 +259,34 @@ func (db *Database) RunMigrations(ctx context.Context) error {
 		return fmt.Errorf("failed to create comment_likes user_id index: %w", err)
 	}
 
+	// Create watch_history table
+	_, err = db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS watch_history (
+			id BIGSERIAL PRIMARY KEY,
+			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			video_id BIGINT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+			watched_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			UNIQUE(user_id, video_id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create watch_history table: %w", err)
+	}
+
+	// Create indexes for watch_history
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_watch_history_user_id ON watch_history(user_id)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create watch_history user_id index: %w", err)
+	}
+
+	_, err = db.Pool.Exec(ctx, `
+		CREATE INDEX IF NOT EXISTS idx_watch_history_watched_at ON watch_history(watched_at)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create watch_history watched_at index: %w", err)
+	}
+
 	return nil
 }
