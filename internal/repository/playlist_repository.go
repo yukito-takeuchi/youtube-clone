@@ -164,6 +164,13 @@ func (r *PlaylistRepository) AddVideo(ctx context.Context, playlistID, videoID i
 		ON CONFLICT (playlist_id, video_id) DO NOTHING
 	`
 	_, err = r.db.Pool.Exec(ctx, query, playlistID, videoID, position)
+	if err != nil {
+		return err
+	}
+
+	// Update parent playlist's updated_at timestamp
+	updateQuery := `UPDATE playlists SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`
+	_, err = r.db.Pool.Exec(ctx, updateQuery, playlistID)
 	return err
 }
 

@@ -96,14 +96,16 @@ func main() {
 	playlistRepo := repository.NewPlaylistRepository(db)
 	subscriptionRepo := repository.NewSubscriptionRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
+	watchHistoryRepo := repository.NewWatchHistoryRepository(db)
 
 	// Initialize services with the storage interface
 	authService := service.NewAuthService(userRepo, profileRepo, playlistRepo, jwtSecret, defaultIconURL, defaultBannerURL)
 	profileService := service.NewProfileService(profileRepo, fileStorage)
 	videoService := service.NewVideoService(videoRepo, profileRepo, fileStorage)
-	playlistService := service.NewPlaylistService(playlistRepo, videoRepo)
+	playlistService := service.NewPlaylistService(playlistRepo, videoRepo, profileRepo)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo, userRepo, videoRepo)
 	commentService := service.NewCommentService(commentRepo, videoRepo)
+	watchHistoryService := service.NewWatchHistoryService(watchHistoryRepo, videoRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
@@ -112,6 +114,7 @@ func main() {
 	playlistHandler := handler.NewPlaylistHandler(playlistService)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 	commentHandler := handler.NewCommentHandler(commentService)
+	watchHistoryHandler := handler.NewWatchHistoryHandler(watchHistoryService)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(jwtSecret)
@@ -234,9 +237,9 @@ func main() {
 		// Comment routes
 		comments := api.Group("/comments")
 		{
-			// Public routes (with optional auth for like status)
-			comments.GET("/videos/:video_id", commentHandler.GetCommentsByVideoID)
-			comments.GET("/:parent_comment_id/replies", commentHandler.GetRepliesByParentID)
+			// Public routes with optional auth for like status
+			comments.GET("/videos/:video_id", authMiddleware.OptionalAuth(), commentHandler.GetCommentsByVideoID)
+			comments.GET("/:parent_comment_id/replies", authMiddleware.OptionalAuth(), commentHandler.GetRepliesByParentID)
 			comments.GET("/videos/:video_id/count", commentHandler.GetCommentCount)
 
 			// Protected routes
@@ -249,6 +252,19 @@ func main() {
 			comments.POST("/:id/like", commentHandler.LikeComment)
 			comments.DELETE("/:id/like", commentHandler.UnlikeComment)
 		}
+
+		// Watch History routes
+		history := api.Group("/history")
+		{
+			history.Use(authMiddleware.RequireAuth())
+			history.GET("", watchHistoryHandler.GetWatchHistory)
+			history.GET("/count", watchHistoryHandler.GetHistoryCount)
+			history.DELETE("", watchHistoryHandler.ClearHistory)
+			history.DELETE("/:video_id", watchHistoryHandler.RemoveFromHistory)
+		}
+
+		// Add to history route (under videos)
+		videos.POST("/:id/history", watchHistoryHandler.AddToHistory)
 	}
 
 	// Run migrations

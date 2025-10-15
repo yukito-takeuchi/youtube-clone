@@ -12,12 +12,14 @@ import (
 type PlaylistService struct {
 	playlistRepo *repository.PlaylistRepository
 	videoRepo    *repository.VideoRepository
+	profileRepo  *repository.ProfileRepository
 }
 
-func NewPlaylistService(playlistRepo *repository.PlaylistRepository, videoRepo *repository.VideoRepository) *PlaylistService {
+func NewPlaylistService(playlistRepo *repository.PlaylistRepository, videoRepo *repository.VideoRepository, profileRepo *repository.ProfileRepository) *PlaylistService {
 	return &PlaylistService{
 		playlistRepo: playlistRepo,
 		videoRepo:    videoRepo,
+		profileRepo:  profileRepo,
 	}
 }
 
@@ -169,12 +171,23 @@ func (s *PlaylistService) GetPlaylistVideos(ctx context.Context, playlistID int6
 		return nil, fmt.Errorf("playlist not found: %w", err)
 	}
 
-	videos, err := s.playlistRepo.GetPlaylistVideos(ctx, playlistID)
+	playlistVideos, err := s.playlistRepo.GetPlaylistVideos(ctx, playlistID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get playlist videos: %w", err)
 	}
 
-	return videos, nil
+	// Get profiles for all videos
+	for _, pv := range playlistVideos {
+		if pv.Video != nil {
+			profile, err := s.profileRepo.FindByUserID(ctx, pv.Video.UserID)
+			if err != nil {
+				profile = nil
+			}
+			pv.Video.Profile = profile
+		}
+	}
+
+	return playlistVideos, nil
 }
 
 func (s *PlaylistService) GetPlaylistsContainingVideo(ctx context.Context, userID, videoID int64) ([]int64, error) {
