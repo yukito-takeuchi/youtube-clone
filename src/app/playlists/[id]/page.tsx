@@ -23,6 +23,15 @@ import {
   Chip,
   Menu,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   PlayArrow as PlayIcon,
@@ -40,6 +49,36 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, PlaylistVideo } from "@/types";
 
+// Helper function to format relative date
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears}年前`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths}ヶ月前`;
+  } else if (diffWeeks > 0) {
+    return `${diffWeeks}週間前`;
+  } else if (diffDays > 0) {
+    return `${diffDays}日前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}時間前`;
+  } else if (diffMins > 0) {
+    return `${diffMins}分前`;
+  } else {
+    return "数秒前";
+  }
+}
+
 export default function PlaylistDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -49,6 +88,14 @@ export default function PlaylistDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editVisibility, setEditVisibility] = useState<
+    "public" | "unlisted" | "private"
+  >("public");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const playlistId = Number(params.id);
   const isOwner = playlist && user && playlist.user_id === user.id;
@@ -124,6 +171,60 @@ export default function PlaylistDetailPage() {
         .padStart(2, "0")}`;
     }
     return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleEditClick = () => {
+    if (playlist) {
+      setEditTitle(playlist.title);
+      setEditDescription(playlist.description || "");
+      setEditVisibility(playlist.visibility);
+      setEditDialogOpen(true);
+    }
+    handleMenuClose();
+  };
+
+  const handleEditSubmit = async () => {
+    if (!playlist) return;
+
+    setUpdating(true);
+    try {
+      await api.updatePlaylist(playlist.id, {
+        title: editTitle,
+        description: editDescription,
+        visibility: editVisibility,
+      });
+      setEditDialogOpen(false);
+      // Reload playlist data
+      await fetchPlaylistData();
+    } catch (err) {
+      console.error("Failed to update playlist:", err);
+      alert(
+        err instanceof Error ? err.message : "プレイリストの更新に失敗しました"
+      );
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteConfirmOpen(true);
+    handleMenuClose();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!playlist) return;
+
+    setUpdating(true);
+    try {
+      await api.deletePlaylist(playlist.id);
+      router.push("/profile");
+    } catch (err) {
+      console.error("Failed to delete playlist:", err);
+      alert(
+        err instanceof Error ? err.message : "プレイリストの削除に失敗しました"
+      );
+      setUpdating(false);
+    }
   };
 
   if (loading) {
@@ -468,24 +569,8 @@ export default function PlaylistDetailPage() {
                           {video.title}
                         </Typography>
 
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: "block", mb: 0.5 }}
-                        >
-                          {video.profile?.channel_name || "チャンネル名"}
-                        </Typography>
-
                         <Typography variant="caption" color="text.secondary">
-                          {video.view_count.toLocaleString()}回視聴 •{" "}
-                          {new Date(video.created_at).toLocaleDateString(
-                            "ja-JP",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            }
-                          )}
+                          {video.profile?.channel_name || "チャンネル名"} • {video.view_count.toLocaleString()}回視聴 • {getRelativeTime(video.created_at)}
                         </Typography>
                       </Box>
 
@@ -522,15 +607,103 @@ export default function PlaylistDetailPage() {
         open={Boolean(menuAnchor)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={handleEditClick}>
           <EditIcon sx={{ mr: 1 }} />
           プレイリストを編集
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={handleDeleteClick}>
           <DeleteIcon sx={{ mr: 1 }} />
           プレイリストを削除
         </MenuItem>
       </Menu>
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => !updating && setEditDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>プレイリストを編集</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="タイトル"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              fullWidth
+              required
+              disabled={updating}
+            />
+            <TextField
+              label="説明"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+              disabled={updating}
+            />
+            <FormControl fullWidth disabled={updating}>
+              <InputLabel>公開設定</InputLabel>
+              <Select
+                value={editVisibility}
+                label="公開設定"
+                onChange={(e: SelectChangeEvent) =>
+                  setEditVisibility(
+                    e.target.value as "public" | "unlisted" | "private"
+                  )
+                }
+              >
+                <MenuItem value="public">公開</MenuItem>
+                <MenuItem value="unlisted">限定公開</MenuItem>
+                <MenuItem value="private">非公開</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={updating}>
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleEditSubmit}
+            variant="contained"
+            disabled={updating || !editTitle.trim()}
+          >
+            {updating ? "保存中..." : "保存"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => !updating && setDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>プレイリストを削除</DialogTitle>
+        <DialogContent>
+          <Typography>
+            本当にこのプレイリストを削除しますか？この操作は取り消せません。
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteConfirmOpen(false)}
+            disabled={updating}
+          >
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={updating}
+          >
+            {updating ? "削除中..." : "削除"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

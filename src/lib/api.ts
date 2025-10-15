@@ -14,6 +14,7 @@ import {
   CreateCommentRequest,
   UpdateCommentRequest,
   LikeCommentRequest,
+  WatchHistory,
 } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -203,6 +204,22 @@ class ApiClient {
     });
   }
 
+  async updatePlaylist(
+    id: number,
+    data: UpdatePlaylistRequest
+  ): Promise<Playlist> {
+    return this.request(`/api/playlists/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePlaylist(id: number): Promise<void> {
+    return this.request(`/api/playlists/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   async addVideoToPlaylist(playlistId: number, videoId: number): Promise<void> {
     return this.request(`/api/playlists/${playlistId}/videos`, {
       method: "POST",
@@ -379,6 +396,37 @@ class ApiClient {
     const response = await this.request<{ count: number }>(
       `/api/comments/videos/${videoId}/count`
     );
+    return response.count;
+  }
+
+  // Watch History
+  async addToHistory(videoId: number): Promise<void> {
+    return this.request(`/api/videos/${videoId}/history`, {
+      method: "POST",
+    });
+  }
+
+  async getWatchHistory(
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<WatchHistory[]> {
+    return this.request(`/api/history?limit=${limit}&offset=${offset}`);
+  }
+
+  async removeFromHistory(videoId: number): Promise<void> {
+    return this.request(`/api/history/${videoId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async clearHistory(): Promise<void> {
+    return this.request("/api/history", {
+      method: "DELETE",
+    });
+  }
+
+  async getHistoryCount(): Promise<number> {
+    const response = await this.request<{ count: number }>("/api/history/count");
     return response.count;
   }
 }

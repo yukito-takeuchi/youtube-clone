@@ -345,6 +345,16 @@ export default function VideoDetailPage() {
         const data = await api.getVideo(Number(params.id));
         setVideo(data);
         setLikeCount(data.like_count || 0);
+
+        // Add to watch history (only for authenticated users, ignore errors)
+        if (isAuthenticated) {
+          try {
+            await api.addToHistory(Number(params.id));
+          } catch (err) {
+            // Silently ignore history errors
+            console.debug("Failed to add to history:", err);
+          }
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "動画の読み込みに失敗しました"
@@ -357,7 +367,7 @@ export default function VideoDetailPage() {
     if (params.id) {
       fetchVideo();
     }
-  }, [params.id]);
+  }, [params.id, isAuthenticated]);
 
   // Fetch like status and subscription status
   useEffect(() => {

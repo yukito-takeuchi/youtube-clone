@@ -123,3 +123,11 @@ export interface UpdateCommentRequest {
 export interface LikeCommentRequest {
   like_type: "like" | "dislike";
 }
+
+export interface WatchHistory {
+  id: number;
+  user_id: number;
+  video_id: number;
+  watched_at: string;
+  video?: Video;
+}
