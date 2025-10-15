@@ -62,3 +62,47 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// OptionalAuth attempts to extract user ID from token if present, but doesn't require authentication
+func (m *AuthMiddleware) OptionalAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			// No auth header, continue without user_id
+			c.Next()
+			return
+		}
+
+		// Extract token from "Bearer <token>"
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			// Invalid format, continue without user_id
+			c.Next()
+			return
+		}
+
+		tokenString := parts[1]
+
+		// Parse and validate token
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return []byte(m.jwtSecret), nil
+		})
+
+		if err != nil || !token.Valid {
+			// Invalid token, continue without user_id
+			c.Next()
+			return
+		}
+
+		// Extract user ID from claims
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			userID := int64(claims["user_id"].(float64))
+			c.Set("user_id", userID)
+		}
+
+		c.Next()
+	}
+}

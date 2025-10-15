@@ -237,9 +237,9 @@ func main() {
 		// Comment routes
 		comments := api.Group("/comments")
 		{
-			// Public routes (with optional auth for like status)
-			comments.GET("/videos/:video_id", commentHandler.GetCommentsByVideoID)
-			comments.GET("/:parent_comment_id/replies", commentHandler.GetRepliesByParentID)
+			// Public routes with optional auth for like status
+			comments.GET("/videos/:video_id", authMiddleware.OptionalAuth(), commentHandler.GetCommentsByVideoID)
+			comments.GET("/:parent_comment_id/replies", authMiddleware.OptionalAuth(), commentHandler.GetRepliesByParentID)
 			comments.GET("/videos/:video_id/count", commentHandler.GetCommentCount)
 
 			// Protected routes
