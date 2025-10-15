@@ -15,6 +15,7 @@ import {
   CardMedia,
   Link as MuiLink,
 } from "@mui/material";
+import { WatchHistory } from "@/types";
 import {
   VideoLibrary as VideoLibraryIcon,
   Settings as SettingsIcon,
@@ -677,6 +678,8 @@ export default function MyPage() {
   const { isAuthenticated, user, profile, loading: authLoading } = useAuth();
   const [playlists, setPlaylists] = useState<(Playlist & { thumbnail?: string | null })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [watchHistory, setWatchHistory] = useState<WatchHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // Pagination state
   const [historyPage, setHistoryPage] = useState(1);
@@ -692,9 +695,17 @@ export default function MyPage() {
         router.push("/login");
       } else {
         fetchPlaylists();
+        fetchWatchHistory();
       }
     }
   }, [authLoading, isAuthenticated, router]);
+
+  // Fetch watch history when page changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchWatchHistory();
+    }
+  }, [historyPage]);
 
   const fetchPlaylists = async () => {
     try {
@@ -722,6 +733,20 @@ export default function MyPage() {
       console.error("Failed to fetch playlists:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchWatchHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const offset = (historyPage - 1) * ITEMS_PER_PAGE;
+      const history = await api.getWatchHistory(ITEMS_PER_PAGE, offset);
+      setWatchHistory(history);
+    } catch (err) {
+      console.error("Failed to fetch watch history:", err);
+      setWatchHistory([]);
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -844,7 +869,7 @@ export default function MyPage() {
                 variant="outlined"
                 size="small"
                 onClick={() => setHistoryPage(historyPage + 1)}
-                disabled={historyPage === Math.ceil(dummyHistoryVideos.length / ITEMS_PER_PAGE)}
+                disabled={watchHistory.length < ITEMS_PER_PAGE}
                 sx={{
                   minWidth: "auto",
                   p: 0.5,
@@ -859,18 +884,35 @@ export default function MyPage() {
           </Box>
         </Box>
 
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            mb: 2,
-          }}
-        >
-          {dummyHistoryVideos
-            .slice((historyPage - 1) * ITEMS_PER_PAGE, historyPage * ITEMS_PER_PAGE)
-            .map((video) => (
+        {historyLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress size={40} />
+          </Box>
+        ) : watchHistory.length === 0 ? (
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 6,
+              bgcolor: "grey.50",
+              borderRadius: 2,
+            }}
+          >
+            <HistoryIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
+            <Typography variant="body2" color="text.secondary">
+              まだ履歴がありません
+            </Typography>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              mb: 2,
+            }}
+          >
+            {watchHistory.map((history) => history.video && (
               <Card
-                key={video.id}
+                key={history.id}
                 elevation={0}
                 sx={{
                   width: {
@@ -888,13 +930,13 @@ export default function MyPage() {
                     },
                   },
                 }}
-                onClick={() => router.push(`/videos/${video.id}`)}
+                onClick={() => router.push(`/videos/${history.video?.id}`)}
               >
                 <CardMedia
                   className="thumbnail"
                   component="img"
-                  image={video.thumbnail_url}
-                  alt={video.title}
+                  image={history.video.thumbnail_url}
+                  alt={history.video.title}
                   sx={{
                     borderRadius: 2,
                     aspectRatio: "16/9",
@@ -914,22 +956,23 @@ export default function MyPage() {
                       minHeight: "2.8em",
                     }}
                   >
-                    {video.title}
+                    {history.video.title}
                   </Typography>
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     sx={{ display: "block", mt: 0.5 }}
                   >
-                    {video.profile?.channel_name}
+                    {history.video.profile?.channel_name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {video.view_count.toLocaleString()}回視聴
+                    {history.video.view_count.toLocaleString()}回視聴
                   </Typography>
                 </CardContent>
               </Card>
             ))}
-        </Box>
+          </Box>
+        )}
       </Box>
 
       {/* Playlists Section */}
