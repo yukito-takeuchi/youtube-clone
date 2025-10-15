@@ -741,7 +741,7 @@ export default function MyPage() {
     try {
       const offset = (historyPage - 1) * ITEMS_PER_PAGE;
       const history = await api.getWatchHistory(ITEMS_PER_PAGE, offset);
-      setWatchHistory(history);
+      setWatchHistory(history || []);
     } catch (err) {
       console.error("Failed to fetch watch history:", err);
       setWatchHistory([]);

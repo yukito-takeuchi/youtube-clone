@@ -37,7 +37,7 @@ export default function SubscriptionsPage() {
           );
         }
 
-        setVideos(data);
+        setVideos(data || []);
       } catch (err) {
         setError(
           err instanceof Error
