@@ -204,6 +204,22 @@ class ApiClient {
     });
   }
 
+  async updatePlaylist(
+    id: number,
+    data: UpdatePlaylistRequest
+  ): Promise<Playlist> {
+    return this.request(`/api/playlists/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePlaylist(id: number): Promise<void> {
+    return this.request(`/api/playlists/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   async addVideoToPlaylist(playlistId: number, videoId: number): Promise<void> {
     return this.request(`/api/playlists/${playlistId}/videos`, {
       method: "POST",
