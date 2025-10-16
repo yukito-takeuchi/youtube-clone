@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import { Profile, Video } from '@/types';
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import { Profile, Video } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Box,
   Container,
@@ -16,15 +16,15 @@ import {
   Button,
   Tabs,
   Tab,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Settings as SettingsIcon,
   VideoLibrary as VideoLibraryIcon,
   AddCircleOutline as AddCircleIcon,
-} from '@mui/icons-material';
-import VideoCard from '@/components/VideoCard';
-import ChannelCustomizeDialog from '@/components/ChannelCustomizeDialog';
-import { getIconUrl, getBannerUrl } from '@/lib/defaults';
+} from "@mui/icons-material";
+import VideoCard from "@/components/VideoCard";
+import ChannelCustomizeDialog from "@/components/ChannelCustomizeDialog";
+import { getIconUrl, getBannerUrl } from "@/lib/defaults";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -48,7 +48,7 @@ export default function ProfileDetailPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [tabValue, setTabValue] = useState(0);
   const [customizeDialogOpen, setCustomizeDialogOpen] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -66,8 +66,8 @@ export default function ProfileDetailPage() {
         const profileData = await api.getProfile(userId);
         setProfile(profileData);
 
-        // Get all videos and filter by user
-        const allVideos = await api.getVideos();
+        // Get all videos and filter by user (increase limit to get more videos)
+        const allVideos = await api.getVideos(1000, 0);
         const userVideos = allVideos.filter((v) => v.user_id === userId);
         setVideos(userVideos);
 
@@ -81,7 +81,11 @@ export default function ProfileDetailPage() {
           setIsSubscribed(subStatus);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'プロフィールの読み込みに失敗しました');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "プロフィールの読み込みに失敗しました"
+        );
       } finally {
         setLoading(false);
       }
@@ -98,7 +102,7 @@ export default function ProfileDetailPage() {
 
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -113,13 +117,16 @@ export default function ProfileDetailPage() {
         setSubscriberCount((prev) => prev + 1);
       }
     } catch (err) {
-      console.error('Failed to toggle subscription:', err);
+      console.error("Failed to toggle subscription:", err);
     }
   };
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container
+        maxWidth="lg"
+        sx={{ py: 4, display: "flex", justifyContent: "center" }}
+      >
         <CircularProgress />
       </Container>
     );
@@ -128,44 +135,61 @@ export default function ProfileDetailPage() {
   if (error || !profile) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">{error || 'プロフィールが見つかりません'}</Alert>
+        <Alert severity="error">
+          {error || "プロフィールが見つかりません"}
+        </Alert>
       </Container>
     );
   }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={0} sx={{ overflow: 'hidden', mb: 2 }}>
+      <Paper elevation={0} sx={{ overflow: "hidden", mb: 2 }}>
         {/* Banner */}
         <Box
           sx={{
             height: 200,
-            bgcolor: 'grey.300',
+            bgcolor: "grey.300",
             backgroundImage: `url(${getBannerUrl(profile.banner_url)})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         />
 
         {/* Profile Info */}
         <Box sx={{ px: 3, pt: 3, pb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3, mb: 2 }}>
-            <Avatar src={getIconUrl(profile.icon_url)} sx={{ width: 100, height: 100, border: '4px solid white', mt: -8 }}>
-              {profile.channel_name?.[0]?.toUpperCase() || 'U'}
+          <Box
+            sx={{ display: "flex", alignItems: "flex-start", gap: 3, mb: 2 }}
+          >
+            <Avatar
+              src={getIconUrl(profile.icon_url)}
+              sx={{
+                width: 100,
+                height: 100,
+                border: "4px solid white",
+                mt: -8,
+              }}
+            >
+              {profile.channel_name?.[0]?.toUpperCase() || "U"}
             </Avatar>
             <Box sx={{ flex: 1 }}>
               <Typography variant="h4" sx={{ fontWeight: 600 }}>
                 {profile.channel_name}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                登録者 {subscriberCount.toLocaleString()}人 • 動画 {videos.length}本
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5 }}
+              >
+                登録者 {subscriberCount.toLocaleString()}人 • 動画{" "}
+                {videos.length}本
               </Typography>
               {profile.description && (
                 <Box sx={{ mt: 1 }}>
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    sx={{ whiteSpace: 'pre-wrap', display: 'inline' }}
+                    sx={{ whiteSpace: "pre-wrap", display: "inline" }}
                   >
                     {showFullDescription || profile.description.length <= 50
                       ? profile.description
@@ -174,16 +198,27 @@ export default function ProfileDetailPage() {
                   {profile.description.length > 50 && (
                     <Button
                       size="small"
-                      onClick={() => setShowFullDescription(!showFullDescription)}
-                      sx={{ ml: 1, minWidth: 'auto', p: 0, textTransform: 'none' }}
+                      onClick={() =>
+                        setShowFullDescription(!showFullDescription)
+                      }
+                      sx={{
+                        ml: 1,
+                        minWidth: "auto",
+                        p: 0,
+                        textTransform: "none",
+                      }}
                     >
-                      {showFullDescription ? '簡潔に表示' : 'さらに表示'}
+                      {showFullDescription ? "簡潔に表示" : "さらに表示"}
                     </Button>
                   )}
                 </Box>
               )}
               {!profile.description && (
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ mt: 1 }}
+                >
                   説明はありません
                 </Typography>
               )}
@@ -191,7 +226,7 @@ export default function ProfileDetailPage() {
           </Box>
 
           {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
             {isOwnChannel ? (
               <>
                 <Button
@@ -204,14 +239,14 @@ export default function ProfileDetailPage() {
                 <Button
                   variant="outlined"
                   startIcon={<VideoLibraryIcon />}
-                  onClick={() => router.push('/videos/manage')}
+                  onClick={() => router.push("/videos/manage")}
                 >
                   動画を管理
                 </Button>
                 <Button
                   variant="contained"
                   startIcon={<AddCircleIcon />}
-                  onClick={() => router.push('/videos/upload')}
+                  onClick={() => router.push("/videos/upload")}
                 >
                   動画をアップロード
                 </Button>
@@ -221,21 +256,27 @@ export default function ProfileDetailPage() {
                 variant="contained"
                 onClick={handleSubscribe}
                 sx={{
-                  bgcolor: isSubscribed ? 'action.hover' : 'text.primary',
-                  color: isSubscribed ? 'text.primary' : 'background.paper',
-                  '&:hover': {
-                    bgcolor: isSubscribed ? 'action.selected' : 'text.secondary',
+                  bgcolor: isSubscribed ? "action.hover" : "text.primary",
+                  color: isSubscribed ? "text.primary" : "background.paper",
+                  "&:hover": {
+                    bgcolor: isSubscribed
+                      ? "action.selected"
+                      : "text.secondary",
                   },
                 }}
               >
-                {isSubscribed ? '登録済み' : '登録'}
+                {isSubscribed ? "登録済み" : "登録"}
               </Button>
             )}
           </Box>
         </Box>
 
         {/* Tabs */}
-        <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} sx={{ borderTop: 1, borderColor: 'divider' }}>
+        <Tabs
+          value={tabValue}
+          onChange={(_, newValue) => setTabValue(newValue)}
+          sx={{ borderTop: 1, borderColor: "divider" }}
+        >
           <Tab label="ホーム" />
           <Tab label="動画" />
           <Tab label="概要" />
@@ -248,7 +289,18 @@ export default function ProfileDetailPage() {
         {videos.length === 0 ? (
           <Alert severity="info">まだ動画がありません</Alert>
         ) : (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
             {videos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
@@ -261,7 +313,18 @@ export default function ProfileDetailPage() {
         {videos.length === 0 ? (
           <Alert severity="info">まだ動画がありません</Alert>
         ) : (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+                lg: "repeat(4, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
             {videos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
@@ -275,8 +338,8 @@ export default function ProfileDetailPage() {
           <Typography variant="h6" sx={{ mb: 2 }}>
             説明
           </Typography>
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-            {profile.description || '説明はありません'}
+          <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+            {profile.description || "説明はありません"}
           </Typography>
 
           <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
@@ -289,10 +352,13 @@ export default function ProfileDetailPage() {
             動画数: {videos.length}本
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            総視聴回数: {videos.reduce((sum, v) => sum + v.view_count, 0).toLocaleString()}回
+            総視聴回数:{" "}
+            {videos.reduce((sum, v) => sum + v.view_count, 0).toLocaleString()}
+            回
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            チャンネル登録日: {new Date(profile.created_at).toLocaleDateString('ja-JP')}
+            チャンネル登録日:{" "}
+            {new Date(profile.created_at).toLocaleDateString("ja-JP")}
           </Typography>
         </Paper>
       </TabPanel>

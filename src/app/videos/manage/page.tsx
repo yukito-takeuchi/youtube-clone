@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api';
-import { Video } from '@/types';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import { Video } from "@/types";
 import {
   Container,
   Typography,
@@ -20,23 +20,23 @@ import {
   CircularProgress,
   Alert,
   Tooltip,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
 export default function ManageVideosPage() {
   const router = useRouter();
   const { isAuthenticated, user, loading: authLoading } = useAuth();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -47,12 +47,15 @@ export default function ManageVideosPage() {
 
   const fetchVideos = async () => {
     try {
-      const data = await api.getVideos();
+      // Get more videos to ensure all user's videos are included
+      const data = await api.getVideos(1000, 0);
       // Filter only user's own videos
       const myVideos = data.filter((v: Video) => v.user_id === user?.id);
       setVideos(myVideos);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '動画の読み込みに失敗しました');
+      setError(
+        err instanceof Error ? err.message : "動画の読み込みに失敗しました"
+      );
     } finally {
       setLoading(false);
     }
@@ -65,13 +68,16 @@ export default function ManageVideosPage() {
       await api.deleteVideo(videoId);
       setVideos(videos.filter((v) => v.id !== videoId));
     } catch (err) {
-      alert(err instanceof Error ? err.message : '削除に失敗しました');
+      alert(err instanceof Error ? err.message : "削除に失敗しました");
     }
   };
 
   if (authLoading || loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container
+        maxWidth="xl"
+        sx={{ py: 4, display: "flex", justifyContent: "center" }}
+      >
         <CircularProgress />
       </Container>
     );
@@ -94,7 +100,7 @@ export default function ManageVideosPage() {
       )}
 
       {videos.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
+        <Paper sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="body1" color="text.secondary">
             まだ動画をアップロードしていません
           </Typography>
@@ -114,18 +120,18 @@ export default function ManageVideosPage() {
               {videos.map((video) => (
                 <TableRow key={video.id} hover>
                   <TableCell>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                       {/* Thumbnail */}
                       <Box
                         component="img"
-                        src={video.thumbnail_url || '/placeholder-video.png'}
+                        src={video.thumbnail_url || "/placeholder-video.png"}
                         alt={video.title}
                         sx={{
                           width: 120,
                           height: 68,
-                          objectFit: 'cover',
+                          objectFit: "cover",
                           borderRadius: 1,
-                          bgcolor: 'action.hover',
+                          bgcolor: "action.hover",
                         }}
                       />
                       {/* Title and Description */}
@@ -134,11 +140,11 @@ export default function ManageVideosPage() {
                           variant="subtitle1"
                           sx={{
                             fontWeight: 500,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
                             WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
+                            WebkitBoxOrient: "vertical",
                           }}
                         >
                           {video.title}
@@ -147,14 +153,14 @@ export default function ManageVideosPage() {
                           variant="caption"
                           color="text.secondary"
                           sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
                             WebkitLineClamp: 1,
-                            WebkitBoxOrient: 'vertical',
+                            WebkitBoxOrient: "vertical",
                           }}
                         >
-                          {video.description || '説明なし'}
+                          {video.description || "説明なし"}
                         </Typography>
                       </Box>
                     </Box>
@@ -166,15 +172,21 @@ export default function ManageVideosPage() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {new Date(video.created_at).toLocaleDateString('ja-JP', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
+                      {new Date(video.created_at).toLocaleDateString("ja-JP", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
                       })}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        justifyContent: "flex-end",
+                      }}
+                    >
                       <Tooltip title="動画を見る">
                         <IconButton
                           size="small"
@@ -186,7 +198,9 @@ export default function ManageVideosPage() {
                       <Tooltip title="編集">
                         <IconButton
                           size="small"
-                          onClick={() => router.push(`/videos/${video.id}/edit`)}
+                          onClick={() =>
+                            router.push(`/videos/${video.id}/edit`)
+                          }
                         >
                           <EditIcon />
                         </IconButton>
