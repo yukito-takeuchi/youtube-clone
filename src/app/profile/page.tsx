@@ -30,6 +30,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, Video } from "@/types";
 import { getIconUrl } from "@/lib/defaults";
+import ProfilePageSkeleton from "@/components/ProfilePageSkeleton";
 
 // Dummy history data
 const dummyHistoryVideos: Video[] = [
@@ -708,6 +709,8 @@ export default function MyPage() {
   }, [historyPage]);
 
   const fetchPlaylists = async () => {
+    const startTime = Date.now();
+
     try {
       const playlistsData = await api.getUserPlaylists();
       // 各プレイリストの最初の動画を取得してサムネイルを設定
@@ -728,6 +731,16 @@ export default function MyPage() {
           }
         })
       );
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setPlaylists(playlistsWithThumbnails);
     } catch (err) {
       console.error("Failed to fetch playlists:", err);
@@ -738,9 +751,21 @@ export default function MyPage() {
 
   const fetchWatchHistory = async () => {
     setHistoryLoading(true);
+    const startTime = Date.now();
+
     try {
       const offset = (historyPage - 1) * ITEMS_PER_PAGE;
       const history = await api.getWatchHistory(ITEMS_PER_PAGE, offset);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setWatchHistory(history || []);
     } catch (err) {
       console.error("Failed to fetch watch history:", err);
@@ -756,15 +781,8 @@ export default function MyPage() {
     }
   };
 
-  if (authLoading || !user) {
-    return (
-      <Container
-        maxWidth="md"
-        sx={{ py: 4, display: "flex", justifyContent: "center" }}
-      >
-        <CircularProgress />
-      </Container>
-    );
+  if (authLoading || !user || loading) {
+    return <ProfilePageSkeleton />;
   }
 
   return (
@@ -1047,11 +1065,7 @@ export default function MyPage() {
           </Box>
         </Box>
 
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress size={40} />
-          </Box>
-        ) : playlists.length === 0 ? (
+        {playlists.length === 0 ? (
           <Box
             sx={{
               textAlign: "center",

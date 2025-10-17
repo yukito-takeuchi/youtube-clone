@@ -48,6 +48,7 @@ import {
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, PlaylistVideo } from "@/types";
+import PlaylistDetailSkeleton from "@/components/PlaylistDetailSkeleton";
 
 // Helper function to format relative date
 function getRelativeTime(dateString: string): string {
@@ -112,11 +113,23 @@ export default function PlaylistDetailPage() {
   }, [playlistId]);
 
   const fetchPlaylistData = async () => {
+    const startTime = Date.now();
+
     try {
       const [playlistData, videosData] = await Promise.all([
         api.getPlaylist(playlistId),
         api.getPlaylistVideos(playlistId),
       ]);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setPlaylist(playlistData);
       setVideos(videosData);
     } catch (err) {
@@ -228,13 +241,7 @@ export default function PlaylistDetailPage() {
   };
 
   if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
-    );
+    return <PlaylistDetailSkeleton />;
   }
 
   if (error || !playlist) {

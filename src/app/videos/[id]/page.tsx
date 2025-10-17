@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Video } from "@/types";
 import { api } from "@/lib/api";
 import VideoPlayer from "@/components/VideoPlayer";
+import VideoDetailSkeleton from "@/components/VideoDetailSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Box,
@@ -18,6 +19,7 @@ import {
   Card,
   CardMedia,
   CardContent,
+  CircularProgress,
 } from "@mui/material";
 import {
   ThumbUp as ThumbUpIcon,
@@ -341,6 +343,8 @@ export default function VideoDetailPage() {
 
   useEffect(() => {
     const fetchVideo = async () => {
+      const startTime = Date.now();
+
       try {
         const data = await api.getVideo(Number(params.id));
         setVideo(data);
@@ -354,6 +358,15 @@ export default function VideoDetailPage() {
             // Silently ignore history errors
             console.debug("Failed to add to history:", err);
           }
+        }
+
+        // Ensure minimum loading time for better UX
+        const elapsedTime = Date.now() - startTime;
+        const MIN_LOADING_TIME = 500;
+        if (elapsedTime < MIN_LOADING_TIME) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+          );
         }
       } catch (err) {
         setError(
@@ -410,11 +423,7 @@ export default function VideoDetailPage() {
   }, [isAuthenticated]);
 
   if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Typography>読み込み中...</Typography>
-      </Container>
-    );
+    return <VideoDetailSkeleton />;
   }
 
   if (error || !video) {
