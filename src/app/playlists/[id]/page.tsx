@@ -48,6 +48,7 @@ import {
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, PlaylistVideo } from "@/types";
+import PlaylistDetailSkeleton from "@/components/PlaylistDetailSkeleton";
 
 // Helper function to format relative date
 function getRelativeTime(dateString: string): string {
@@ -240,13 +241,7 @@ export default function PlaylistDetailPage() {
   };
 
   if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
-    );
+    return <PlaylistDetailSkeleton />;
   }
 
   if (error || !playlist) {

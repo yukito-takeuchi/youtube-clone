@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import VideoCard from "@/components/VideoCard";
 import ChannelCustomizeDialog from "@/components/ChannelCustomizeDialog";
+import UserProfileSkeleton from "@/components/UserProfileSkeleton";
 import { getIconUrl, getBannerUrl } from "@/lib/defaults";
 
 interface TabPanelProps {
@@ -133,14 +134,7 @@ export default function ProfileDetailPage() {
   };
 
   if (loading) {
-    return (
-      <Container
-        maxWidth="lg"
-        sx={{ py: 4, display: "flex", justifyContent: "center" }}
-      >
-        <CircularProgress />
-      </Container>
-    );
+    return <UserProfileSkeleton />;
   }
 
   if (error || !profile) {

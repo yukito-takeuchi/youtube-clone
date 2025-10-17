@@ -30,6 +30,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { Playlist, Video } from "@/types";
 import { getIconUrl } from "@/lib/defaults";
+import ProfilePageSkeleton from "@/components/ProfilePageSkeleton";
 
 // Dummy history data
 const dummyHistoryVideos: Video[] = [
@@ -780,15 +781,8 @@ export default function MyPage() {
     }
   };
 
-  if (authLoading || !user) {
-    return (
-      <Container
-        maxWidth="md"
-        sx={{ py: 4, display: "flex", justifyContent: "center" }}
-      >
-        <CircularProgress />
-      </Container>
-    );
+  if (authLoading || !user || loading) {
+    return <ProfilePageSkeleton />;
   }
 
   return (
@@ -1071,11 +1065,7 @@ export default function MyPage() {
           </Box>
         </Box>
 
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-            <CircularProgress size={40} />
-          </Box>
-        ) : playlists.length === 0 ? (
+        {playlists.length === 0 ? (
           <Box
             sx={{
               textAlign: "center",

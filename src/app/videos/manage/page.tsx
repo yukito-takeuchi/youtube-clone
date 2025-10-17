@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { Video } from "@/types";
+import ManageVideosSkeleton from "@/components/ManageVideosSkeleton";
 import {
   Container,
   Typography,
@@ -46,11 +47,23 @@ export default function ManageVideosPage() {
   }, [authLoading, isAuthenticated, router]);
 
   const fetchVideos = async () => {
+    const startTime = Date.now();
+
     try {
       // Get more videos to ensure all user's videos are included
       const data = await api.getVideos(1000, 0);
       // Filter only user's own videos
       const myVideos = data.filter((v: Video) => v.user_id === user?.id);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setVideos(myVideos);
     } catch (err) {
       setError(
@@ -73,14 +86,7 @@ export default function ManageVideosPage() {
   };
 
   if (authLoading || loading) {
-    return (
-      <Container
-        maxWidth="xl"
-        sx={{ py: 4, display: "flex", justifyContent: "center" }}
-      >
-        <CircularProgress />
-      </Container>
-    );
+    return <ManageVideosSkeleton />;
   }
 
   if (!isAuthenticated) {
