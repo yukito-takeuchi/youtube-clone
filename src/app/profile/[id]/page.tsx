@@ -62,6 +62,8 @@ export default function ProfileDetailPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      const startTime = Date.now();
+
       try {
         const profileData = await api.getProfile(userId);
         setProfile(profileData);
@@ -79,6 +81,15 @@ export default function ProfileDetailPage() {
         if (isAuthenticated && !isOwnChannel) {
           const subStatus = await api.getSubscriptionStatus(userId);
           setIsSubscribed(subStatus);
+        }
+
+        // Ensure minimum loading time for better UX
+        const elapsedTime = Date.now() - startTime;
+        const MIN_LOADING_TIME = 500;
+        if (elapsedTime < MIN_LOADING_TIME) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+          );
         }
       } catch (err) {
         setError(

@@ -343,6 +343,8 @@ export default function VideoDetailPage() {
 
   useEffect(() => {
     const fetchVideo = async () => {
+      const startTime = Date.now();
+
       try {
         const data = await api.getVideo(Number(params.id));
         setVideo(data);
@@ -356,6 +358,15 @@ export default function VideoDetailPage() {
             // Silently ignore history errors
             console.debug("Failed to add to history:", err);
           }
+        }
+
+        // Ensure minimum loading time for better UX
+        const elapsedTime = Date.now() - startTime;
+        const MIN_LOADING_TIME = 500;
+        if (elapsedTime < MIN_LOADING_TIME) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+          );
         }
       } catch (err) {
         setError(

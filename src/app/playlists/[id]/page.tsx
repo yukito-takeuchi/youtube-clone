@@ -112,11 +112,23 @@ export default function PlaylistDetailPage() {
   }, [playlistId]);
 
   const fetchPlaylistData = async () => {
+    const startTime = Date.now();
+
     try {
       const [playlistData, videosData] = await Promise.all([
         api.getPlaylist(playlistId),
         api.getPlaylistVideos(playlistId),
       ]);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setPlaylist(playlistData);
       setVideos(videosData);
     } catch (err) {

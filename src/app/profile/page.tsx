@@ -708,6 +708,8 @@ export default function MyPage() {
   }, [historyPage]);
 
   const fetchPlaylists = async () => {
+    const startTime = Date.now();
+
     try {
       const playlistsData = await api.getUserPlaylists();
       // 各プレイリストの最初の動画を取得してサムネイルを設定
@@ -728,6 +730,16 @@ export default function MyPage() {
           }
         })
       );
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setPlaylists(playlistsWithThumbnails);
     } catch (err) {
       console.error("Failed to fetch playlists:", err);
@@ -738,9 +750,21 @@ export default function MyPage() {
 
   const fetchWatchHistory = async () => {
     setHistoryLoading(true);
+    const startTime = Date.now();
+
     try {
       const offset = (historyPage - 1) * ITEMS_PER_PAGE;
       const history = await api.getWatchHistory(ITEMS_PER_PAGE, offset);
+
+      // Ensure minimum loading time for better UX
+      const elapsedTime = Date.now() - startTime;
+      const MIN_LOADING_TIME = 500;
+      if (elapsedTime < MIN_LOADING_TIME) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+        );
+      }
+
       setWatchHistory(history || []);
     } catch (err) {
       console.error("Failed to fetch watch history:", err);
