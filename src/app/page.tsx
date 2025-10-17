@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Video } from "@/types";
 import { api } from "@/lib/api";
 import VideoCard from "@/components/VideoCard";
+import VideoCardSkeleton from "@/components/VideoCardSkeleton";
 import { CircularProgress, Box } from "@mui/material";
 
 export default function HomePage() {
@@ -86,9 +87,13 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-        <CircularProgress size={60} />
-      </Box>
+      <div className="max-w-[2000px] mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-x-4 gap-y-8">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <VideoCardSkeleton key={index} />
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -115,13 +120,14 @@ export default function HomePage() {
           </div>
 
           {/* Loading indicator and observer target */}
-          <div ref={observerTarget} className="flex justify-center py-8">
-            {isLoading && (
-              <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <CircularProgress size={40} />
-              </Box>
-            )}
-          </div>
+          {isLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-x-4 gap-y-8 mt-8">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <VideoCardSkeleton key={`loading-${index}`} />
+              ))}
+            </div>
+          )}
+          <div ref={observerTarget} style={{ height: "20px" }} />
         </>
       )}
     </div>

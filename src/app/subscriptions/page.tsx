@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Video } from "@/types";
 import { api } from "@/lib/api";
 import VideoCard from "@/components/VideoCard";
+import VideoCardSkeleton from "@/components/VideoCardSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { CircularProgress, Box } from "@mui/material";
 
@@ -54,9 +55,14 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-        <CircularProgress size={60} />
-      </Box>
+      <div className="max-w-[2000px] mx-auto px-6 py-6">
+        <h1 className="text-2xl font-bold mb-6">登録チャンネル</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-x-4 gap-y-8">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <VideoCardSkeleton key={index} />
+          ))}
+        </div>
+      </div>
     );
   }
 

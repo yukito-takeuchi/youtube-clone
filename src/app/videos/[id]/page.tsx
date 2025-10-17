@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Video } from "@/types";
 import { api } from "@/lib/api";
 import VideoPlayer from "@/components/VideoPlayer";
+import VideoDetailSkeleton from "@/components/VideoDetailSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Box,
@@ -411,13 +412,7 @@ export default function VideoDetailPage() {
   }, [isAuthenticated]);
 
   if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress size={60} />
-        </Box>
-      </Container>
-    );
+    return <VideoDetailSkeleton />;
   }
 
   if (error || !video) {
