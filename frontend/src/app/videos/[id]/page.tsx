@@ -1,0 +1,802 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Video } from "@/types";
+import { api } from "@/lib/api";
+import VideoPlayer from "@/components/VideoPlayer";
+import VideoDetailSkeleton from "@/components/VideoDetailSkeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Box,
+  Container,
+  Typography,
+  IconButton,
+  Button,
+  Avatar,
+  Divider,
+  TextField,
+  Card,
+  CardMedia,
+  CardContent,
+  CircularProgress,
+} from "@mui/material";
+import {
+  ThumbUp as ThumbUpIcon,
+  ThumbDown as ThumbDownIcon,
+  Share as ShareIcon,
+  PlaylistAdd as PlaylistAddIcon,
+} from "@mui/icons-material";
+import Link from "next/link";
+import PlaylistDialog from "@/components/PlaylistDialog";
+import CommentSection from "@/components/CommentSection";
+import { getIconUrl } from "@/lib/defaults";
+
+// Helper function to format relative date
+function getRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffYears > 0) {
+    return `${diffYears}年前`;
+  } else if (diffMonths > 0) {
+    return `${diffMonths}ヶ月前`;
+  } else if (diffWeeks > 0) {
+    return `${diffWeeks}週間前`;
+  } else if (diffDays > 0) {
+    return `${diffDays}日前`;
+  } else if (diffHours > 0) {
+    return `${diffHours}時間前`;
+  } else if (diffMins > 0) {
+    return `${diffMins}分前`;
+  } else {
+    return "数秒前";
+  }
+}
+
+// Dummy related videos
+const dummyRelatedVideos: Video[] = [
+  {
+    id: 101,
+    title: "関連動画: Reactの最新機能を解説",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related1/168/94",
+    view_count: 8500,
+    user_id: 10,
+    created_at: "2024-01-10T10:00:00Z",
+    updated_at: "2024-01-10T10:00:00Z",
+    profile: {
+      id: 10,
+      user_id: 10,
+      channel_name: "React Tips",
+      icon_url: "https://picsum.photos/seed/channel1/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 102,
+    title: "TypeScript完全ガイド2024",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related2/168/94",
+    view_count: 12000,
+    user_id: 11,
+    created_at: "2024-01-09T15:30:00Z",
+    updated_at: "2024-01-09T15:30:00Z",
+    profile: {
+      id: 11,
+      user_id: 11,
+      channel_name: "TypeScript Pro",
+      icon_url: "https://picsum.photos/seed/channel2/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 103,
+    title: "Next.js App Routerの使い方",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related3/168/94",
+    view_count: 9200,
+    user_id: 12,
+    created_at: "2024-01-08T09:00:00Z",
+    updated_at: "2024-01-08T09:00:00Z",
+    profile: {
+      id: 12,
+      user_id: 12,
+      channel_name: "Next.js Master",
+      icon_url: "https://picsum.photos/seed/channel3/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 104,
+    title: "Material UI v5の新機能",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related4/168/94",
+    view_count: 7800,
+    user_id: 13,
+    created_at: "2024-01-07T14:20:00Z",
+    updated_at: "2024-01-07T14:20:00Z",
+    profile: {
+      id: 13,
+      user_id: 13,
+      channel_name: "UI Design",
+      icon_url: "https://picsum.photos/seed/channel4/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 105,
+    title: "Web開発のベストプラクティス",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related5/168/94",
+    view_count: 15000,
+    user_id: 14,
+    created_at: "2024-01-06T11:45:00Z",
+    updated_at: "2024-01-06T11:45:00Z",
+    profile: {
+      id: 14,
+      user_id: 14,
+      channel_name: "Web Dev Pro",
+      icon_url: "https://picsum.photos/seed/channel5/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 106,
+    title: "JavaScriptのパフォーマンス最適化",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related6/168/94",
+    view_count: 10500,
+    user_id: 15,
+    created_at: "2024-01-05T16:00:00Z",
+    updated_at: "2024-01-05T16:00:00Z",
+    profile: {
+      id: 15,
+      user_id: 15,
+      channel_name: "JS Performance",
+      icon_url: "https://picsum.photos/seed/channel6/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 107,
+    title: "REST API設計の基礎",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related7/168/94",
+    view_count: 11200,
+    user_id: 16,
+    created_at: "2024-01-04T13:30:00Z",
+    updated_at: "2024-01-04T13:30:00Z",
+    profile: {
+      id: 16,
+      user_id: 16,
+      channel_name: "API Design",
+      icon_url: "https://picsum.photos/seed/channel7/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 108,
+    title: "Dockerで開発環境を構築",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related8/168/94",
+    view_count: 13500,
+    user_id: 17,
+    created_at: "2024-01-03T10:15:00Z",
+    updated_at: "2024-01-03T10:15:00Z",
+    profile: {
+      id: 17,
+      user_id: 17,
+      channel_name: "DevOps Guide",
+      icon_url: "https://picsum.photos/seed/channel8/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 109,
+    title: "GitHubのワークフロー完全版",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related9/168/94",
+    view_count: 9700,
+    user_id: 18,
+    created_at: "2024-01-02T08:45:00Z",
+    updated_at: "2024-01-02T08:45:00Z",
+    profile: {
+      id: 18,
+      user_id: 18,
+      channel_name: "Git Master",
+      icon_url: "https://picsum.photos/seed/channel9/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 110,
+    title: "CSSグリッドレイアウト入門",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related10/168/94",
+    view_count: 8800,
+    user_id: 19,
+    created_at: "2024-01-01T15:20:00Z",
+    updated_at: "2024-01-01T15:20:00Z",
+    profile: {
+      id: 19,
+      user_id: 19,
+      channel_name: "CSS Expert",
+      icon_url: "https://picsum.photos/seed/channel10/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 111,
+    title: "Webアクセシビリティの基本",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related11/168/94",
+    view_count: 7500,
+    user_id: 20,
+    created_at: "2023-12-31T12:00:00Z",
+    updated_at: "2023-12-31T12:00:00Z",
+    profile: {
+      id: 20,
+      user_id: 20,
+      channel_name: "A11y Guide",
+      icon_url: "https://picsum.photos/seed/channel11/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+  {
+    id: 112,
+    title: "モダンJavaScriptの書き方",
+    description: "",
+    video_url: "",
+    thumbnail_url: "https://picsum.photos/seed/related12/168/94",
+    view_count: 14200,
+    user_id: 21,
+    created_at: "2023-12-30T09:30:00Z",
+    updated_at: "2023-12-30T09:30:00Z",
+    profile: {
+      id: 21,
+      user_id: 21,
+      channel_name: "Modern JS",
+      icon_url: "https://picsum.photos/seed/channel12/36/36",
+      description: "",
+      banner_url: "",
+      created_at: "",
+      updated_at: "",
+    },
+  },
+];
+
+export default function VideoDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const [video, setVideo] = useState<Video | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [playlistDialogOpen, setPlaylistDialogOpen] = useState(false);
+
+  // Like state
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+
+  // Subscription state
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState(0);
+
+  // Description collapse state
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // User profile state
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchVideo = async () => {
+      const startTime = Date.now();
+
+      try {
+        const data = await api.getVideo(Number(params.id));
+        setVideo(data);
+        setLikeCount(data.like_count || 0);
+
+        // Add to watch history (only for authenticated users, ignore errors)
+        if (isAuthenticated) {
+          try {
+            await api.addToHistory(Number(params.id));
+          } catch (err) {
+            // Silently ignore history errors
+            console.debug("Failed to add to history:", err);
+          }
+        }
+
+        // Ensure minimum loading time for better UX
+        const elapsedTime = Date.now() - startTime;
+        const MIN_LOADING_TIME = 500;
+        if (elapsedTime < MIN_LOADING_TIME) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, MIN_LOADING_TIME - elapsedTime)
+          );
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "動画の読み込みに失敗しました"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchVideo();
+    }
+  }, [params.id, isAuthenticated]);
+
+  // Fetch like status and subscription status
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      if (!video || !isAuthenticated) return;
+
+      try {
+        // Fetch like status
+        const likeStatus = await api.getLikeStatus(video.id);
+        setIsLiked(likeStatus);
+
+        // Fetch subscription status and subscriber count
+        const subStatus = await api.getSubscriptionStatus(video.user_id);
+        setIsSubscribed(subStatus);
+
+        const subCount = await api.getSubscriberCount(video.user_id);
+        setSubscriberCount(subCount);
+      } catch (err) {
+        console.error("Failed to fetch statuses:", err);
+      }
+    };
+
+    fetchStatuses();
+  }, [video, isAuthenticated]);
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const profile = await api.getMyProfile();
+        setUserProfile(profile);
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, [isAuthenticated]);
+
+  if (loading) {
+    return <VideoDetailSkeleton />;
+  }
+
+  if (error || !video) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Typography color="error">{error || "動画が見つかりません"}</Typography>
+      </Container>
+    );
+  }
+
+  const isOwner = isAuthenticated && user && video.user_id === user.id;
+
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (!video) return;
+
+    try {
+      if (isLiked) {
+        await api.unlikeVideo(video.id);
+        setIsLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        await api.likeVideo(video.id);
+        setIsLiked(true);
+        setLikeCount((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error("Failed to toggle like:", err);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    if (!video) return;
+
+    try {
+      if (isSubscribed) {
+        await api.unsubscribeFromChannel(video.user_id);
+        setIsSubscribed(false);
+        setSubscriberCount((prev) => prev - 1);
+      } else {
+        await api.subscribeToChannel(video.user_id);
+        setIsSubscribed(true);
+        setSubscriberCount((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error("Failed to toggle subscription:", err);
+    }
+  };
+
+  const handleSaveClick = () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    setPlaylistDialogOpen(true);
+  };
+
+  return (
+    <Container
+      maxWidth={false}
+      sx={{ px: 0, maxWidth: 2400, mx: "auto", py: 1 }}
+    >
+      <Box sx={{ display: "flex", gap: 3, px: 2 }}>
+        {/* Main Content */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Video Player */}
+          <Box sx={{
+            width: "100%",
+            maxHeight: 'calc(100vh - 200px)',
+            '& > div': {
+              width: '100%',
+              height: '100%',
+              '& video': {
+                objectFit: 'contain',
+              }
+            }
+          }}>
+            <VideoPlayer videoUrl={video.video_url} title={video.title} />
+          </Box>
+
+          {/* Video Title */}
+          <Typography
+            variant="h6"
+            sx={{
+              mt: 1.5,
+              mb: 1.5,
+              fontWeight: 600,
+              fontSize: "1.25rem",
+              lineHeight: 1.4,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {video.title}
+          </Typography>
+
+          {/* Channel Info and Actions Bar */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 1.5,
+            }}
+          >
+            {/* Channel Info */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Link
+                href={`/profile/${video.user_id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <Avatar
+                  src={getIconUrl(video.profile?.icon_url)}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 0.8 },
+                  }}
+                >
+                  {video.profile?.channel_name?.[0]?.toUpperCase() || "U"}
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      "&:hover": { opacity: 0.8 },
+                    }}
+                  >
+                    {video.profile?.channel_name || "チャンネル名"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    登録者数 {subscriberCount.toLocaleString()}人
+                  </Typography>
+                </Box>
+              </Link>
+
+              {!isOwner && (
+                <Button
+                  variant="contained"
+                  onClick={handleSubscribe}
+                  sx={{
+                    bgcolor: isSubscribed ? "action.hover" : "text.primary",
+                    color: isSubscribed ? "text.primary" : "background.paper",
+                    borderRadius: 50,
+                    px: 3,
+                    ml: 1,
+                    "&:hover": {
+                      bgcolor: isSubscribed
+                        ? "action.selected"
+                        : "text.secondary",
+                    },
+                  }}
+                >
+                  {isSubscribed ? "登録済み" : "登録"}
+                </Button>
+              )}
+            </Box>
+
+            {/* Actions */}
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {/* Like/Dislike */}
+              <Box
+                sx={{
+                  display: "flex",
+                  bgcolor: "action.hover",
+                  borderRadius: 50,
+                  overflow: "hidden",
+                }}
+              >
+                <IconButton
+                  size="small"
+                  sx={{ borderRadius: 0 }}
+                  onClick={handleLike}
+                >
+                  <ThumbUpIcon
+                    fontSize="small"
+                    sx={{ color: isLiked ? "primary.main" : "inherit" }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      ml: 1,
+                      mr: 1,
+                      color: isLiked ? "primary.main" : "inherit",
+                    }}
+                  >
+                    {likeCount}
+                  </Typography>
+                </IconButton>
+                <Divider orientation="vertical" flexItem />
+                <IconButton size="small" sx={{ borderRadius: 0 }}>
+                  <ThumbDownIcon fontSize="small" />
+                </IconButton>
+              </Box>
+
+              {/* Share */}
+              <IconButton sx={{ bgcolor: "action.hover", borderRadius: 50 }}>
+                <ShareIcon fontSize="small" />
+                <Typography variant="body2" sx={{ ml: 1, mr: 1 }}>
+                  共有
+                </Typography>
+              </IconButton>
+
+              {/* Save to Playlist */}
+              <IconButton
+                onClick={handleSaveClick}
+                sx={{ bgcolor: "action.hover", borderRadius: 50 }}
+              >
+                <PlaylistAddIcon fontSize="small" />
+                <Typography variant="body2" sx={{ ml: 1, mr: 1 }}>
+                  保存
+                </Typography>
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* View Count and Date + Description */}
+          <Box
+            sx={{
+              bgcolor: "action.hover",
+              borderRadius: 2,
+              p: 2,
+              mt: 1.5,
+              cursor: showFullDescription ? "default" : "pointer",
+              "&:hover": showFullDescription
+                ? {}
+                : {
+                    bgcolor: "action.selected",
+                  },
+            }}
+            onClick={() => !showFullDescription && setShowFullDescription(true)}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+              {video.view_count.toLocaleString()} 回視聴 •{" "}
+              {getRelativeTime(video.created_at)}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                whiteSpace: "pre-wrap",
+                display: showFullDescription ? "block" : "-webkit-box",
+                WebkitLineClamp: showFullDescription ? "unset" : 1,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                wordBreak: "break-word",
+              }}
+            >
+              {video.description || "説明はありません"}
+            </Typography>
+            {showFullDescription && (
+              <Button
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowFullDescription(false);
+                }}
+                sx={{
+                  mt: 1,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  color: "text.primary",
+                  p: 0,
+                  minWidth: "auto",
+                  "&:hover": {
+                    bgcolor: "transparent",
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                簡潔に表示
+              </Button>
+            )}
+          </Box>
+
+          {/* Comments Section */}
+          <CommentSection
+            videoId={video.id}
+            videoCreatorId={video.user_id}
+            videoCreatorProfile={video.profile}
+            currentUserId={user?.id}
+            currentUserProfile={userProfile}
+          />
+        </Box>
+
+        {/* Sidebar - Related Videos */}
+        <Box sx={{ width: 402, flexShrink: 0, display: { xs: "none", lg: "block" } }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {dummyRelatedVideos.map((relatedVideo) => (
+              <Card
+                key={relatedVideo.id}
+                elevation={0}
+                sx={{
+                  display: "flex",
+                  cursor: "pointer",
+                  bgcolor: "transparent",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                  },
+                }}
+                onClick={() => router.push(`/videos/${relatedVideo.id}`)}
+              >
+                <CardMedia
+                  component="img"
+                  image={relatedVideo.thumbnail_url}
+                  alt={relatedVideo.title}
+                  sx={{
+                    width: 168,
+                    height: 94,
+                    borderRadius: 2,
+                    flexShrink: 0,
+                  }}
+                />
+                <CardContent sx={{ flex: 1, p: "0 !important", pl: 1.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      lineHeight: 1.3,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      mb: 0.5,
+                    }}
+                  >
+                    {relatedVideo.title}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mb: 0.3 }}
+                  >
+                    {relatedVideo.profile?.channel_name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {relatedVideo.view_count.toLocaleString()}回視聴
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Playlist Dialog */}
+      {video && (
+        <PlaylistDialog
+          open={playlistDialogOpen}
+          onClose={() => setPlaylistDialogOpen(false)}
+          videoId={video.id}
+          videoTitle={video.title}
+        />
+      )}
+    </Container>
+  );
+}
