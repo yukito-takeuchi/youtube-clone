@@ -18,6 +18,7 @@ import {
   Card,
   CardMedia,
   CardContent,
+  CircularProgress,
 } from "@mui/material";
 import {
   ThumbUp as ThumbUpIcon,
@@ -412,7 +413,9 @@ export default function VideoDetailPage() {
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Typography>読み込み中...</Typography>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+          <CircularProgress size={60} />
+        </Box>
       </Container>
     );
   }
