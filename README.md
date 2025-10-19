@@ -39,6 +39,18 @@
 
 ---
 
+## 📺 デモ
+
+<div align="center">
+
+![YouTube Clone Demo](https://github.com/yukito-takeuchi/youtube-clone/blob/main/youtube-clone-gif.gif)
+
+_実際のアプリケーションの動作デモ_
+
+</div>
+
+---
+
 ## ✨ 主な機能
 
 ### 🔐 ユーザー認証
