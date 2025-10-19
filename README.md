@@ -12,6 +12,18 @@
 
 ---
 
+## 📺 デモ
+
+<div align="center">
+
+![YouTube Clone Demo](https://github.com/yukito-takeuchi/youtube-clone/blob/main/youtube-clone-gif.gif)
+
+_実際のアプリケーションの動作デモ_
+
+</div>
+
+---
+
 ## 📝 概要
 
 このプロジェクトは、YouTube のような本格的な動画共有プラットフォームを、**Go**と**Next.js**を用いてフルスクラッチで開発したものです。
@@ -36,18 +48,6 @@
 - Docker によるコンテナオーケストレーション
 - ファイルストレージ（Google Cloud Storage/MinIO）の統合
 - クラウドデプロイ（Vercel、Heroku）の実装
-
----
-
-## 📺 デモ
-
-<div align="center">
-
-![YouTube Clone Demo](https://github.com/yukito-takeuchi/youtube-clone/blob/main/youtube-clone-gif.gif)
-
-_実際のアプリケーションの動作デモ_
-
-</div>
 
 ---
 
